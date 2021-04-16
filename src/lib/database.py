@@ -111,7 +111,7 @@ class Db:
                         conn.execute(ddl.read().decode("utf-8-sig", "ignore"))
 
             with self._engine.connect() as connection:
-                result = connection.execute(text("insert into field1 values ('ttttt')"))
+                result = connection.execute(text("insert into temp values ('ttttt')"))
                 result = connection.execute(text("select field1 from temp"))
                 for row in result:
                     self._logger.debug("Field 1 content: ", row['field1'])
