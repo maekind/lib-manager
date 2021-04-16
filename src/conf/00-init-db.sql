@@ -1,8 +1,8 @@
-CREATE TABLE Temp (
+CREATE TABLE IF NOT EXISTS Temp (
 id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 field1 VARCHAR(30) NOT NULL
-) 
+); 
 
-INSERT INTO Temp (field1) VALUES ("Test1") 
-INSERT INTO Temp (field1) VALUES ("Test2")
-INSERT INTO Temp (field1) VALUES ("Test3")
+INSERT INTO Temp(field1) VALUES('Test1'); 
+INSERT INTO Temp(field1) VALUES('Test2');
+INSERT INTO Temp(field1) VALUES('Test3');
