@@ -28,7 +28,7 @@ class Db:
         self._database = "music"
                
         self._engine = create_engine(
-            "mysql://{0}:{1}@{2}:{3}/{4}".format(self._user, self._password, self._host, self._port, self._database)
+            "mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(self._user, self._password, self._host, self._port, self._database)
         )
 
         logger.debug(f"ConnectionString: mysql://{0}:{1}@{2}:{3}/{4}".format(self._user, self._password, self._host, self._port, self._database))
