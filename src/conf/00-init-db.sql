@@ -5,4 +5,3 @@ CREATE TABLE IF NOT EXISTS temp
 )
 ;
 
-INSERT INTO temp VALUES ('My first task');
