@@ -3,13 +3,16 @@
 lib manager daemon
 '''
 import argparse
+import logging
 from flask import Flask
-
-app = Flask(__name__)
 
 author = 'Marco Espinosa'
 version = '1.0'
 email = 'hi@marcoespinosa.com'
+
+app = Flask(__name__)
+
+logger = configure_logging("file-observer")
 
 @app.route('/')
 def hello_message():
@@ -19,12 +22,45 @@ def hello_message():
 @app.route('/created/<path:file>')
 def create_file(file):
     message = f'Create {file}'
+    logger.info(message)
     return message 
 
 @app.route('/deleted/<path:file>')
 def delete_file(file):
     message = f'Delete {file}'
+    logger.info(message)
     return message 
+
+def configure_logging(name):
+    '''
+    Function to configure loggind
+    @name: logger name
+    @return logger
+    '''
+    level = logging.DEBUG
+
+    log_setup = logging.getLogger(name)
+
+    # Formatting logger output
+    formatter = logging.Formatter(
+        "%(asctime)s [%(name)s] [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    )
+
+    # Setting logger to console       
+    log_handler = logging.StreamHandler()
+
+    # Setting formatter
+    log_handler.setFormatter(formatter)
+
+    # Setting level
+    log_setup.setLevel(level)
+
+    # Creating handler to configured logger
+    log_setup.addHandler(log_handler)
+
+    # Set logger
+    return logging.getLogger(name)
+
 
 def main():
     '''
