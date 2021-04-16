@@ -31,7 +31,7 @@ class Db:
             "mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(self._user, self._password, self._host, self._port, self._database)
         )
 
-        logger.debug(f"ConnectionString: mysql://{0}:{1}@{2}:{3}/{4}".format(self._user, self._password, self._host, self._port, self._database))
+        logger.debug(f"ConnectionString: mysql://{self._user}:{self._password}@{self._host}:{self._port}/{self._database}")
 
     def session(self):
         """
@@ -101,17 +101,21 @@ class Db:
         '''
         Function to create database if it does not exist
         '''
-        if not database_exists(self._engine.url):
-            self._logger.info(f"Database {self._database} doesn't exist. Running initialization ...")
-            create_database(self._engine.url)
+        if database_exists(self._engine.url):
+            self._logger.info(f"Running tables initialization ...")
+            
+            for sql_file in self.__sql_files_in(Path(__file__).resolve().parent.parent / "conf"):
+                self._logger.info(f"Running {Path(sql_file).name}")
+                with self._engine.begin() as conn:
+                    with open(sql_file, "br") as ddl:
+                        conn.execute(ddl.read().decode("utf-8-sig", "ignore"))
 
-            # for sql_file in self.__sql_files_in(Path(__file__).resolve().parent.parent / "conf"):
-            #     self._logger.info(f"Running {Path(sql_file).name}")
-            #     with self._engine.begin() as conn:
-            #         with open(sql_file, "br") as ddl:
-            #             conn.execute(ddl.read().decode("utf-8-sig", "ignore"))
+            with self._engine.connect() as connection:
+                result = connection.execute(text("select field1 from Temp"))
+                for row in result:
+                    self._logger.debug("Field 1 content: ", row['field1'])
 
-            self._logger.info(f"Database {self._database} created successfully")
+            self._logger.info(f"Initialization complete successfully")
             return True
         else:
             self._logger.info("Databse already exists; doing nothing!")

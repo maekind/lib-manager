@@ -48,7 +48,7 @@ def configure_logging(name):
 
 
 # Configure logger
-logger = configure_logging("file-observer")
+logger = configure_logging("lib-manager")
 
 
 @app.route('/')
