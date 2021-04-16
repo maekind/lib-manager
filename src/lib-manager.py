@@ -4,7 +4,10 @@ lib manager daemon
 '''
 import argparse
 import logging
+import sys
 from flask import Flask
+from lib.database import Db, Tables
+from sqlalchemy.exc import OperationalError
 
 author = 'Marco Espinosa'
 version = '1.0'
@@ -66,6 +69,22 @@ def delete_file(file):
     logger.info(message)
     return message
 
+def init_db():
+    '''
+    Function to initialize database at first time
+    '''
+    # Initialize database
+    database = Db(logger)
+    try:
+        database.init_db()
+    except OperationalError as e:
+        logger.error(e)
+        sys.exit(1)
+    # session = database.session()
+    # db_session = session()
+    # # Get tables
+    # #tables = Tables(database)
+    
 
 def main():
     '''
@@ -85,6 +104,7 @@ def main():
 
     # Check for arguments
     if args.address is not None and args.port is not None:
+        init_db()
         app.run(host=args.address, port=args.port)
     else:
         parser.print_help()
