@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 '''
 lib manager daemon
 '''
@@ -12,24 +12,6 @@ email = 'hi@marcoespinosa.com'
 
 app = Flask(__name__)
 
-logger = configure_logging("file-observer")
-
-@app.route('/')
-def hello_message():
-    return 'Event-manager for handling system file changes'
-
-
-@app.route('/created/<path:file>')
-def create_file(file):
-    message = f'Create {file}'
-    logger.info(message)
-    return message 
-
-@app.route('/deleted/<path:file>')
-def delete_file(file):
-    message = f'Delete {file}'
-    logger.info(message)
-    return message 
 
 def configure_logging(name):
     '''
@@ -46,7 +28,7 @@ def configure_logging(name):
         "%(asctime)s [%(name)s] [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-    # Setting logger to console       
+    # Setting logger to console
     log_handler = logging.StreamHandler()
 
     # Setting formatter
@@ -60,6 +42,29 @@ def configure_logging(name):
 
     # Set logger
     return logging.getLogger(name)
+
+
+# Configure logger
+logger = configure_logging("file-observer")
+
+
+@app.route('/')
+def hello_message():
+    return 'Event-manager for handling system file changes'
+
+
+@app.route('/created/<path:file>')
+def create_file(file):
+    message = f'Create {file}'
+    logger.info(message)
+    return message
+
+
+@app.route('/deleted/<path:file>')
+def delete_file(file):
+    message = f'Delete {file}'
+    logger.info(message)
+    return message
 
 
 def main():
@@ -85,5 +90,6 @@ def main():
         parser.print_help()
         exit(1)
 
+
 if __name__ == "__main__":
-    main()    
+    main()
