@@ -5,7 +5,7 @@ Database interface
 import sys
 import os
 from pathlib import Path
-from song import Song
+from lib.song import Song
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
