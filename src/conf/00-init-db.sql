@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS temp
 )
 ;
 
-INSERT INTO temp (field1) VALUES ('My first task');
+INSERT INTO temp VALUES ('My first task');
