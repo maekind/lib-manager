@@ -6,7 +6,7 @@ import argparse
 import logging
 import sys
 from flask import Flask
-from lib.database import Db, Tables
+from lib.database import Db
 from sqlalchemy.exc import OperationalError
 
 author = 'Marco Espinosa'
