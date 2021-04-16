@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 
 '''
-Event manager daemon
+lib manager daemon
 '''
 import argparse
 from flask import Flask
@@ -30,7 +30,7 @@ def main():
     '''
     Function Main
     '''
-    parser = argparse.ArgumentParser(description='Event manager')
+    parser = argparse.ArgumentParser(description='Lib manager')
 
     parser.add_argument('-a', '--address',
                         help='Webservice host address or FQDN.',
