@@ -8,7 +8,7 @@ from pathlib import Path
 from lib.song import Song
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy_utils import database_exists, create_database
 
 class Db:
