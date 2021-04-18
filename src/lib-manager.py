@@ -78,7 +78,7 @@ def init_db():
     # Initialize database
     database = Db(logger)
     try:
-        # result = database.init_db()
+        result = database.init_db()
         # If tables created, we perform a forlder scan
         # to initialize database
         result = True
