@@ -28,7 +28,7 @@ class Scanner:
         @return: list of Song
         '''
         songs = []
-        # start_time = time.time()
+        start_time = time.time()
         first = True
 
         # Iterate each element of the folder
@@ -48,13 +48,8 @@ class Scanner:
                     
         # print()
         # print("--- %s seconds ---" % (time.time() - start_time))
-        return (songs, self._count)
-
-
-if __name__ == "__main__":
-    scanner = Scanner("/srv/music")
-    songs, count = scanner.scan()
-    print(f'Processed files: {count}')
+        total_time = time.time() - start_time
+        return (songs, self._count, total_time)
 
 
 

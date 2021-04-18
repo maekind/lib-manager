@@ -5,9 +5,11 @@ lib manager daemon
 import argparse
 import logging
 import sys
+import os
 from flask import Flask
 from lib.database.connector import Db
 from sqlalchemy.exc import OperationalError
+from lib.media.scanner import Scanner
 
 author = 'Marco Espinosa'
 version = '1.0'
@@ -76,7 +78,13 @@ def init_db():
     # Initialize database
     database = Db(logger)
     try:
-        database.init_db()
+        result = database.init_db()
+        # If tables created, we perform a forlder scan
+        # to initialize database
+        if result:
+            scanner = Scanner(os.environ['LIB_FOLDER'])
+            songs, count, time = scanner.scan()
+            logger.info(f'Processed files: {count} in {time} seconds')
     except OperationalError as e:
         logger.error(e)
         sys.exit(1)

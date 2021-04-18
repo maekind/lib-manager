@@ -119,10 +119,9 @@ class Db:
             #         self._logger.debug("Field 1 content: ", row['field1'])
 
             self._logger.info(f"Initialization complete successfully")
+            # TODO: Check if we had created the tables or not
             return True
-        else:
-            self._logger.info("Databse already exists; doing nothing!")
-            return False   
+         
         
 
 
