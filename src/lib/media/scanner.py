@@ -25,7 +25,7 @@ class Scanner:
     def scan(self):
         '''
         Function to launch scan
-        @return: list of Song
+        @return: tuple of list of Song, processed files and elapsed time
         '''
         songs = []
         start_time = time.time()
