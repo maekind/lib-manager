@@ -5,11 +5,13 @@ Database interface
 import sys
 import os
 from pathlib import Path
-from lib.song import Song
+from lib.media.song import Song
+from lib.media.definitions import DATABASE
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, text
 from sqlalchemy_utils import database_exists, create_database
+            
 
 class Db:
     '''
@@ -25,7 +27,7 @@ class Db:
         self._host = os.environ['DB_HOST']
         self._port = os.environ['DB_PORT']
         self._logger = logger
-        self._database = "music"
+        self._database = DATABASE
                
         self._engine = create_engine(
             "mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(self._user, self._password, self._host, self._port, self._database)
@@ -104,17 +106,17 @@ class Db:
         if database_exists(self._engine.url):
             self._logger.info(f"Running tables initialization ...")
             
-            for sql_file in self.__sql_files_in(Path(__file__).resolve().parent.parent / "conf"):
+            for sql_file in self.__sql_files_in(Path(__file__).resolve().parent.parent.parent / "conf"):
                 self._logger.info(f"Running {Path(sql_file).name}")
                 with self._engine.begin() as conn:
                     with open(sql_file, "br") as ddl:
                         conn.execute(ddl.read().decode("utf-8-sig", "ignore"))
 
-            with self._engine.connect() as connection:
-                result = connection.execute(text("insert into temp values (1,'ttttt')"))
-                result = connection.execute(text("select field1 from temp"))
-                for row in result:
-                    self._logger.debug("Field 1 content: ", row['field1'])
+            # with self._engine.connect() as connection:
+            #     result = connection.execute(text("insert into temp values (1,'ttttt')"))
+            #     result = connection.execute(text("select field1 from temp"))
+            #     for row in result:
+            #         self._logger.debug("Field 1 content: ", row['field1'])
 
             self._logger.info(f"Initialization complete successfully")
             return True

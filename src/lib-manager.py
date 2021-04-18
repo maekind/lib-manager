@@ -6,7 +6,7 @@ import argparse
 import logging
 import sys
 from flask import Flask
-from lib.database import Db
+from lib.database.connector import Db
 from sqlalchemy.exc import OperationalError
 
 author = 'Marco Espinosa'
@@ -80,11 +80,7 @@ def init_db():
     except OperationalError as e:
         logger.error(e)
         sys.exit(1)
-    # session = database.session()
-    # db_session = session()
-    # # Get tables
-    # #tables = Tables(database)
-    
+            
 
 def main():
     '''
