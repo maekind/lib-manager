@@ -78,14 +78,11 @@ def init_db():
     # Initialize database
     database = Db(logger)
     try:
-        result = database.init_db()
-        # If tables created, we perform a forlder scan
-        # to initialize database
-        result = True
-        if result:
-            scanner = Scanner(os.environ['LIB_FOLDER'])
-            songs, count, time = scanner.scan()
-            logger.info(f'Processed files: {count} in {time} seconds')
+        database.init_db()
+        scanner = Scanner(os.environ['LIB_FOLDER'])
+        songs, count, time = scanner.scan()
+        logger.info(f'Processed files: {count} in {time} seconds')
+        
     except OperationalError as e:
         logger.error(e)
         sys.exit(1)

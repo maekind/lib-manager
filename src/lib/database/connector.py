@@ -1,17 +1,15 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 '''
 Database interface
 '''
-import sys
+
 import os
-from pathlib import Path
+import mysql.connector
+from mysql.connector import errorcode
 from lib.media.song import Song
 from lib.media.definitions import DATABASE
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, text
-from sqlalchemy_utils import database_exists, create_database
-            
+from lib.database.tables import TABLES
+
 
 class Db:
     '''
@@ -28,100 +26,52 @@ class Db:
         self._port = os.environ['DB_PORT']
         self._logger = logger
         self._database = DATABASE
-               
-        self._engine = create_engine(
-            "mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(self._user, self._password, self._host, self._port, self._database)
-        )
 
-        logger.debug(f"ConnectionString: mysql://{self._user}:{self._password}@{self._host}:{self._port}/{self._database}")
-
-    def session(self):
-        """
-        Start a new transaction on the established database connection.
-        """
-        self._base = automap_base()
-        self._base.prepare(self._engine, reflect=True)
-
-        self._sessionmaker = sessionmaker(bind=self._engine)
-        return self._sessionmaker
-
-    def connect(self, dbname):
+    def __connect(self):
         '''
-        Function to connect to a database
+        Function to connect to database
         '''
-        # self.base = automap_base()
-        # self.engine = create_engine(
-        #     "mysql://{0}:{1}@{2}:{3}/{4}".format(self._user, self._password, self._host, self._port, dbname)
-        # )
-        # self.base.prepare(self.engine, reflect=True)
+        try:
+            self._connection = mysql.connector.connect(user=self._user, password=self._password,
+                                                       host=self._host,
+                                                       database=self._database)
 
-        # self._sessionmaker = sessionmaker(bind=self.engine)
+        except mysql.connector.Error as err:
 
-    @property
-    def classes(self):
-        """
-        Forward requests for relationship classes to the base.
-        """
-        return self.base.classes
+            self._connection = None
 
-    def get_path_file(self, id):
-        '''
-        Returns the path file for a given id
-        @id: id field
-        @return: path file string
-        '''
-
-    def insert(self, song):
-        '''
-        Inserts a song into the database
-        @song: song information
-        @return: result
-        '''
-
-    def delete(self, song_file):
-        '''
-        Deletes a song from the database
-        @song_file: song local file
-        @return: result
-        '''
-
-    def __sql_files_in(self, folder):
-        '''
-        Returns an alphabetically sorted list of files ending in '.sql' in
-        the specified folder.
-        '''
-        sql_files = [
-            os.path.join(r, filename)
-            for r, _, f in os.walk(folder)
-            for filename in f
-            if filename.endswith(".sql")
-        ]
-
-        return sorted(sql_files)
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                self._logger.error(
+                    "Something is wrong with your user name or password")
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                self._logger.error("Database does not exist")
+            else:
+                self._logger.error(err)
 
     def init_db(self):
         '''
-        Function to create database if it does not exist
+        Initialize database: tables creation
         '''
-        if database_exists(self._engine.url):
-            self._logger.info(f"Running tables initialization ...")
-            
-            for sql_file in self.__sql_files_in(Path(__file__).resolve().parent.parent.parent / "conf"):
-                self._logger.info(f"Running {Path(sql_file).name}")
-                with self._engine.begin() as conn:
-                    with open(sql_file, "br") as ddl:
-                        conn.execute(ddl.read().decode("utf-8-sig", "ignore"))
+        self._logger.info(f"Initialising database...")
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+            for table_name in TABLES:
+                table_description = TABLES[table_name]
+                try:
+                    self._logger.info(f"Creating table {table_name}...")
+                    cursor.execute(table_description)
+                except mysql.connector.Error as err:
+                    if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                        self._logger.error(
+                            "Table {table_name} already exists: nothing to do.")
+                    else:
+                        self._logger.error(err.msg)
+                else:
+                    self._logger.info(
+                        f"Table {table_name} created successfully.")
 
-            # with self._engine.connect() as connection:
-            #     result = connection.execute(text("insert into temp values (1,'ttttt')"))
-            #     result = connection.execute(text("select field1 from temp"))
-            #     for row in result:
-            #         self._logger.debug("Field 1 content: ", row['field1'])
+            cursor.close()
+            self._connection.close()
 
-            self._logger.info(f"Initialization complete successfully")
-            # TODO: Check if we had created the tables or not
-            return True
-         
-        
-
-
+            self._logger.info(f"Database initialized successfully.")
