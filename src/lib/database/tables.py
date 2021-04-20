@@ -1,8 +1,8 @@
-# Database tables
+# Database TABLES_CREATE
 
-TABLES = {}
+TABLES_CREATE = {}
 
-TABLES['artist'] = (
+TABLES_CREATE['artist'] = (
     "CREATE TABLE `artist` ("
     "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
     "  `name` varchar(200) NOT NULL,"
@@ -11,7 +11,7 @@ TABLES['artist'] = (
     ") ENGINE=InnoDB")
 
 
-TABLES['album'] = (
+TABLES_CREATE['album'] = (
     "CREATE TABLE `album` ("
     "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
     "  `name` varchar(100) NOT NULL,"
@@ -26,7 +26,7 @@ TABLES['album'] = (
     ") ENGINE=InnoDB")
 
 
-TABLES['files'] = (
+TABLES_CREATE['files'] = (
     "CREATE TABLE `files` ("
     "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
     "  `path` varchar(512) NOT NULL,"
@@ -34,7 +34,7 @@ TABLES['files'] = (
     ") ENGINE=InnoDB")
 
 
-TABLES['songs'] = (
+TABLES_CREATE['songs'] = (
     "CREATE TABLE `songs` ("
     "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
     "  `title` varchar(200) NOT NULL,"
@@ -53,7 +53,7 @@ TABLES['songs'] = (
     ") ENGINE=InnoDB")
 
 
-TABLES['playlist'] = (
+TABLES_CREATE['playlist'] = (
     "CREATE TABLE `playlist` ("
     "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
     "  `name` varchar(100) NOT NULL,"
@@ -64,5 +64,21 @@ TABLES['playlist'] = (
     "  CONSTRAINT `playlist_ibfk_1` FOREIGN KEY (`song_id`) REFERENCES `songs` (`id`)"
     ") ENGINE=InnoDB")
 
+
+TABLES_DROP = {}
+
+TABLES_DROP['artist'] = ()
+
+
+TABLES_DROP['album'] = ()
+
+
+TABLES_DROP['files'] = ()
+
+
+TABLES_DROP['songs'] = ()
+
+
+TABLES_DROP['playlist'] = ()
 
 # 2021-04-18 19:34:53

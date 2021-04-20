@@ -70,14 +70,15 @@ def delete_file(file):
     logger.info(message)
     return message
 
-def init_db():
+
+def init_db(freshdb):
     '''
     Function to initialize database at first time
     '''
     # Initialize database
     database = Db(logger)
     try:
-        database.init_db()
+        database.init_db(freshdb)
         logger.info(f'Scanning library ...')
         scanner = Scanner(os.environ['LIB_FOLDER'])
         songs, count, time = scanner.scan()
@@ -87,13 +88,11 @@ def init_db():
         # For each song
         for song in songs:
             id = database.add_song(song)
-            
 
-                
     except Exception as e:
         logger.error(e)
         sys.exit(1)
-            
+
 
 def main():
     '''
@@ -109,11 +108,20 @@ def main():
                         help='Webservice port.',
                         dest='port', metavar='INT')
 
+    parser.add_argument('-f', '--fresh-db',
+                        help='Set to True to start with a fresh database. All content and tables will be erased.',
+                        dest='freshdb', metavar='BOOLEAN')
+
     args = parser.parse_args()
+
+    freshdb = False
+    if args.freshdb is not None:
+        freshdb =args.freshdb
+    
 
     # Check for arguments
     if args.address is not None and args.port is not None:
-        init_db()
+        init_db(freshdb)
         app.run(host=args.address, port=args.port)
     else:
         parser.print_help()

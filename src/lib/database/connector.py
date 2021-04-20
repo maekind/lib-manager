@@ -8,7 +8,7 @@ import mysql.connector
 from mysql.connector import errorcode
 from lib.media.song import Song
 from lib.media.definitions import DATABASE
-from lib.database.tables import TABLES
+from lib.database.tables import TABLES_CREATE
 
 
 class Db:
@@ -48,16 +48,18 @@ class Db:
             else:
                 self._logger.error(err)
 
-    def init_db(self):
+    def init_db(self, freshdb):
         '''
         Initialize database: tables creation
+        @freshdb: Weather the daabase instance has to be new.
         '''
         self._logger.info(f"Initialising database...")
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
-            for table_name in TABLES:
-                table_description = TABLES[table_name]
+
+            for table_name in TABLES_CREATE:
+                table_description = TABLES_CREATE[table_name]
                 try:
                     self._logger.info(f"Creating table {table_name}...")
                     cursor.execute(table_description)
@@ -91,7 +93,7 @@ class Db:
         # 4-Add song
         song_id = self.__add_song(song, file_id, artist_id, album_id)
 
-        return id
+        return song_id
 
     def __add_song(self, song, file_id, artist_id, album_id):
         '''
@@ -138,7 +140,7 @@ class Db:
         id = None
 
         query = ("SELECT id FROM files "
-                 "WHERE path = '%s'")
+                 "WHERE path = %s")
 
         self.__connect()
         if self._connection is not None:
@@ -168,7 +170,7 @@ class Db:
         id = None
 
         query = ("SELECT id FROM artist "
-                 "WHERE name = '%s'")
+                 "WHERE name = %s")
 
         self.__connect()
         if self._connection is not None:
@@ -200,7 +202,7 @@ class Db:
         id = None
 
         query = ("SELECT id FROM album "
-                 "WHERE name = '%s'")
+                 "WHERE name = %s")
 
         self.__connect()
         if self._connection is not None:
