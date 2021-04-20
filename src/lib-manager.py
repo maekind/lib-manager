@@ -8,7 +8,6 @@ import sys
 import os
 from flask import Flask
 from lib.database.connector import Db
-from sqlalchemy.exc import OperationalError
 from lib.media.scanner import Scanner
 
 author = 'Marco Espinosa'
