@@ -81,8 +81,14 @@ def init_db():
         scanner = Scanner(os.environ['LIB_FOLDER'])
         songs, count, time = scanner.scan()
         logger.info(f'Processed files: {count} in {time} seconds')
-        
-    except OperationalError as e:
+
+        logger.info(f'Saving music data into the database...')
+        # For each song
+        for song in songs:
+            database.add_song(song)
+
+                
+    except Exception as e:
         logger.error(e)
         sys.exit(1)
             

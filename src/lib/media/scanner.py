@@ -29,8 +29,7 @@ class Scanner:
         '''
         songs = []
         start_time = time.time()
-        first = True
-
+        
         # Iterate each element of the folder
         for root, subdirs, files in walk(self._folder):
             for fil in files:
@@ -41,13 +40,7 @@ class Scanner:
                     # Adds song to the list
                     songs.append(song)
                     self._count += 1
-                    # print(f'Processed files {self._count}', end='\r')
-                    # if self._count == 1000:
-                    #     print()
-                    #     print("--- %s seconds ---" % (time.time() - start_time))
                     
-        # print()
-        # print("--- %s seconds ---" % (time.time() - start_time))
         total_time = time.time() - start_time
         return (songs, self._count, total_time)
 

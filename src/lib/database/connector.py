@@ -75,3 +75,11 @@ class Db:
             self._connection.close()
 
             self._logger.info(f"Database initialized successfully.")
+
+    def add_song(self, song):
+        '''
+        Function to save song data into the database
+        '''
+        
+
+
