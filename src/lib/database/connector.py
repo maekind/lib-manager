@@ -187,7 +187,7 @@ class Db:
 
             cursor.execute(query, (song.artist))
             id = cursor.fetchone()
-            self._logger("Adding artist -select")
+            self._logger("Adding artist -insert")
             if id is None:
                 query = ("INSERT INTO artist "
                          "(name, image) "
@@ -223,7 +223,7 @@ class Db:
 
             cursor.execute(query, (song.album))
             id = cursor.fetchone()
-            self._logger("Adding album - select")
+            self._logger("Adding album - insert")
             if id is None:
                 query = ("INSERT INTO album "
                          "(name, genre, tracks, year, image, artist_id) "
