@@ -107,7 +107,7 @@ class Db:
         # Select file id from file
         # If it doesn't exist, we added and fetch id.
         id = None
-
+        self._logger("Adding song -select")
         query = ("SELECT id FROM songs "
                  "WHERE name = %s")
 
@@ -117,7 +117,7 @@ class Db:
 
             cursor.execute(query, (song.title))
             id = cursor.fetchone()
-
+            self._logger("Adding song - insert")
             if id is None:
                 query = ("INSERT INTO songs "
                          "(title, duration, track, file_id, album_id, artist_id) "
@@ -142,7 +142,7 @@ class Db:
         # Select file id from file
         # If it doesn't exist, we added and fetch id.
         id = None
-
+        self._logger("Adding file - select")
         query = ("SELECT id FROM files "
                  "WHERE path = %s")
 
@@ -153,6 +153,7 @@ class Db:
             cursor.execute(query, (song.audio_file))
             id = cursor.fetchone()
 
+            self._logger("Adding file - insert")
             if id is None:
                 query = ("INSERT INTO files "
                          "(path) "
@@ -176,7 +177,7 @@ class Db:
         # Select artist id from artist
         # If it doesn't exist, we added and fetch id.
         id = None
-
+        self._logger("Adding artist - select")
         query = ("SELECT id FROM artist "
                  "WHERE name = %s")
 
@@ -186,7 +187,7 @@ class Db:
 
             cursor.execute(query, (song.artist))
             id = cursor.fetchone()
-
+            self._logger("Adding artist -select")
             if id is None:
                 query = ("INSERT INTO artist "
                          "(name, image) "
@@ -212,7 +213,7 @@ class Db:
         # If it doesn't exist, we added and fetch id.
 
         id = None
-
+        self._logger("Adding album - select")
         query = ("SELECT id FROM album "
                  "WHERE name = %s")
 
@@ -222,7 +223,7 @@ class Db:
 
             cursor.execute(query, (song.album))
             id = cursor.fetchone()
-
+            self._logger("Adding album - select")
             if id is None:
                 query = ("INSERT INTO album "
                          "(name, genre, tracks, year, image, artist_id) "
