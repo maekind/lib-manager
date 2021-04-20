@@ -78,6 +78,7 @@ def init_db():
     database = Db(logger)
     try:
         database.init_db()
+        logger.info(f'Scanning library ...')
         scanner = Scanner(os.environ['LIB_FOLDER'])
         songs, count, time = scanner.scan()
         logger.info(f'Processed files: {count} in {time} seconds')
@@ -85,7 +86,8 @@ def init_db():
         logger.info(f'Saving music data into the database...')
         # For each song
         for song in songs:
-            database.add_song(song)
+            id = database.add_song(song)
+            
 
                 
     except Exception as e:

@@ -79,7 +79,143 @@ class Db:
     def add_song(self, song):
         '''
         Function to save song data into the database
+        @song: song data
         '''
-        
+        # Every step only if it doesn't exist.
+        # 1-Add file
+        file_id = self.__add_file(song)
+        # 2-Add artist
+        artist_id = self.__add_artist(song)
+        # 3-Add album
+        album_id = self.__add_album(song, artist_id)
+        # 4-Add song
+        song_id = self.__add_song(song, file_id, artist_id, album_id)
 
+        return id
 
+    def __add_song(self, song, file_id, artist_id, album_id):
+        '''
+        Function to get the file id related to a file
+        @song: song data
+        @file_id: file id
+        @artist_id: artist id
+        @album_id: album id
+        @return: id
+        '''
+        # Select file id from file
+        # If it doesn't exist, we added and fetch id.
+        id = None
+
+        query = ("SELECT id FROM songs "
+                 "WHERE name = %s")
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query, (song.title))
+            id = cursor.fetchone()
+
+            if id is None:
+                query = ("INSERT INTO songs "
+                         "(title, duration, track, file_id, album_id, artist_id) "
+                         "VALUES (%s, %s, %s, %s, %s, %s,)")
+                cursor.execute(query, (song.title, song.duration,
+                               song.track, file_id, album_id, artist_id))
+
+                id = cursor.lastrowid
+
+        return id
+
+    def __add_file(self, song):
+        '''
+        Function to get the file id related to a file
+        @song: song data
+        @return: id
+        '''
+        # Select file id from file
+        # If it doesn't exist, we added and fetch id.
+        id = None
+
+        query = ("SELECT id FROM files "
+                 "WHERE path = '%s'")
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query, (song.audio_file))
+            id = cursor.fetchone()
+
+            if id is None:
+                query = ("INSERT INTO files "
+                         "(path) "
+                         "VALUES (%s)")
+                cursor.execute(query, (song.audio_file))
+
+                id = cursor.lastrowid
+
+        return id
+
+    def __add_artist(self, song):
+        '''
+        Function to get the artist id related to an artist
+        @song: song data
+        @return: id
+        '''
+        # Select artist id from artist
+        # If it doesn't exist, we added and fetch id.
+        id = None
+
+        query = ("SELECT id FROM artist "
+                 "WHERE name = '%s'")
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query, (song.artist))
+            id = cursor.fetchone()
+
+            if id is None:
+                query = ("INSERT INTO artist "
+                         "(name, image) "
+                         "VALUES (%s, %s)")
+                cursor.execute(query, (song.artist, 'null'))
+
+                id = cursor.lastrowid
+
+        return id
+
+    def __add_album(self, song, artist_id):
+        '''
+        Function to get the album id related to an album
+        @song: song data
+        @artist_id: artist id
+        @return: id
+        '''
+        # Select album id from album
+        # If it doesn't exist, we added and fetch id.
+
+        id = None
+
+        query = ("SELECT id FROM album "
+                 "WHERE name = '%s'")
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query, (song.album))
+            id = cursor.fetchone()
+
+            if id is None:
+                query = ("INSERT INTO album "
+                         "(name, genre, tracks, year, image, artist_id) "
+                         "VALUES (%s, %s, %s, %s, %s, %s)")
+                cursor.execute(query, (song.album, song.genre,
+                               song.track_total, song.year, 'null', artist_id))
+
+                id = cursor.lastrowid
+
+        return id
