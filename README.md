@@ -17,10 +17,11 @@ Lib-manager docker image launches a python flask application that is listens for
 
 	- -a, --address: Webservice host address or FQDN.
 	- -o, --port: Webservice port.
+	- -f, --fresh-db: Set to True to erase database content at initialization a begin with a fresh database instance.
 
 ### Running the docker
 
-	$> docker run -ti maekind/lib-manager:latest -a "http://<your_ip_address_or_fqdn>" -o <port>
+	$> docker run -ti maekind/lib-manager:latest -a "http://<your_ip_address_or_fqdn>" -o <port> -f True
 
 ## Credits
 

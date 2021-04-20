@@ -121,11 +121,15 @@ class Db:
             if id is None:
                 query = ("INSERT INTO songs "
                          "(title, duration, track, file_id, album_id, artist_id) "
-                         "VALUES (%s, %s, %s, %s, %s, %s,)")
+                         "VALUES (%s, %s, %s, %s, %s, %s)")
                 cursor.execute(query, (song.title, song.duration,
                                song.track, file_id, album_id, artist_id))
 
                 id = cursor.lastrowid
+
+            self._connection.commit()
+            cursor.close()
+            self._connection.close()
 
         return id
 
@@ -156,6 +160,10 @@ class Db:
                 cursor.execute(query, (song.audio_file))
 
                 id = cursor.lastrowid
+            
+            self._connection.commit()
+            cursor.close()
+            self._connection.close()
 
         return id
 
@@ -186,6 +194,10 @@ class Db:
                 cursor.execute(query, (song.artist, 'null'))
 
                 id = cursor.lastrowid
+
+            self._connection.commit()
+            cursor.close()
+            self._connection.close()
 
         return id
 
@@ -219,5 +231,9 @@ class Db:
                                song.track_total, song.year, 'null', artist_id))
 
                 id = cursor.lastrowid
+            
+            self._connection.commit()
+            cursor.close()
+            self._connection.close()
 
         return id
