@@ -2,7 +2,7 @@
 '''
 Database interface
 '''
-
+import json
 import os
 import mysql.connector
 from mysql.connector import errorcode
@@ -66,7 +66,7 @@ class Db:
                 except mysql.connector.Error as err:
                     if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
                         self._logger.error(
-                            "Table {table_name} already exists: nothing to do.")
+                            f"Table {table_name} already exists: nothing to do.")
                     else:
                         self._logger.error(err.msg)
                 else:
@@ -107,27 +107,26 @@ class Db:
         # Select file id from file
         # If it doesn't exist, we added and fetch id.
         id = None
-        self._logger("Adding song -select")
-        query = ("SELECT id FROM songs "
-                 "WHERE name = %s")
-
+        title = song.title.replace("'", "\\'")
+        query = (f"SELECT id FROM songs WHERE title = '{title}'")
+        
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
 
-            cursor.execute(query, (song.title))
+            cursor.execute(query)
             id = cursor.fetchone()
-            self._logger("Adding song - insert")
+            
             if id is None:
-                query = ("INSERT INTO songs "
-                         "(title, duration, track, file_id, album_id, artist_id) "
-                         "VALUES (%s, %s, %s, %s, %s, %s)")
-                cursor.execute(query, (song.title, song.duration,
-                               song.track, file_id, album_id, artist_id))
-
+                query = (f"INSERT INTO songs (title, duration, track, file_id, album_id, artist_id) VALUES ('{title}', {song.duration}, {song.track}, {file_id}, {album_id}, {artist_id})")
+                cursor.execute(query)
+                self._connection.commit()
                 id = cursor.lastrowid
+                
+            else:
+                id = id[0]
 
-            self._connection.commit()
+            
             cursor.close()
             self._connection.close()
 
@@ -142,27 +141,28 @@ class Db:
         # Select file id from file
         # If it doesn't exist, we added and fetch id.
         id = None
-        self._logger("Adding file - select")
-        query = ("SELECT id FROM files "
-                 "WHERE path = %s")
+        audio_file = song.audio_file.replace("'", "\\'")
+        query = (f"SELECT id FROM files WHERE path = '{audio_file}'")
 
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
 
-            cursor.execute(query, (song.audio_file))
+            cursor.execute(query)
             id = cursor.fetchone()
-
-            self._logger("Adding file - insert")
-            if id is None:
-                query = ("INSERT INTO files "
-                         "(path) "
-                         "VALUES (%s)")
-                cursor.execute(query, (song.audio_file))
-
-                id = cursor.lastrowid
             
-            self._connection.commit()
+            if id is None:
+                
+                query = (
+                    f"INSERT INTO files (path) VALUES ('{audio_file}')")
+                
+                cursor.execute(query)
+                self._connection.commit()
+                id = cursor.lastrowid
+                
+            else:
+                id = id[0]
+            
             cursor.close()
             self._connection.close()
 
@@ -177,26 +177,26 @@ class Db:
         # Select artist id from artist
         # If it doesn't exist, we added and fetch id.
         id = None
-        self._logger("Adding artist - select")
-        query = ("SELECT id FROM artist "
-                 "WHERE name = %s")
+        artist = song.artist.replace("'", "\\'")
+        query = (f"SELECT id FROM artist WHERE name = '{artist}'")
 
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
 
-            cursor.execute(query, (song.artist))
+            cursor.execute(query)
             id = cursor.fetchone()
-            self._logger("Adding artist -insert")
+            
             if id is None:
-                query = ("INSERT INTO artist "
-                         "(name, image) "
-                         "VALUES (%s, %s)")
-                cursor.execute(query, (song.artist, 'null'))
-
+                query = (f"INSERT INTO artist (name) VALUES ('{artist}')")
+                
+                cursor.execute(query)
+                self._connection.commit()
                 id = cursor.lastrowid
-
-            self._connection.commit()
+                
+            else:
+                id = id[0]
+            
             cursor.close()
             self._connection.close()
 
@@ -213,27 +213,26 @@ class Db:
         # If it doesn't exist, we added and fetch id.
 
         id = None
-        self._logger("Adding album - select")
-        query = ("SELECT id FROM album "
-                 "WHERE name = %s")
+        album = song.album.replace("'", "\\'")
+        query = (f"SELECT id FROM album WHERE name = '{album}'")
 
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
 
-            cursor.execute(query, (song.album))
+            cursor.execute(query)
             id = cursor.fetchone()
-            self._logger("Adding album - insert")
-            if id is None:
-                query = ("INSERT INTO album "
-                         "(name, genre, tracks, year, image, artist_id) "
-                         "VALUES (%s, %s, %s, %s, %s, %s)")
-                cursor.execute(query, (song.album, song.genre,
-                               song.track_total, song.year, 'null', artist_id))
-
-                id = cursor.lastrowid
             
-            self._connection.commit()
+            if id is None:
+                query = (f"INSERT INTO album (name, genre, tracks, year, artist_id) VALUES ('{album}', '{song.genre}', {song.track_total}, {song.year}, {artist_id})")
+                
+                cursor.execute(query)
+                self._connection.commit()
+                id = cursor.lastrowid
+                
+            else:
+                id = id[0]
+            
             cursor.close()
             self._connection.close()
 

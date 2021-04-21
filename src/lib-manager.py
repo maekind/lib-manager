@@ -6,9 +6,11 @@ import argparse
 import logging
 import sys
 import os
+import time
 from flask import Flask
 from lib.database.connector import Db
 from lib.media.scanner import Scanner
+
 
 author = 'Marco Espinosa'
 version = '1.0'
@@ -81,13 +83,18 @@ def init_db(freshdb):
         database.init_db(freshdb)
         logger.info(f'Scanning library ...')
         scanner = Scanner(os.environ['LIB_FOLDER'])
-        songs, count, time = scanner.scan()
-        logger.info(f'Processed files: {count} in {time} seconds')
+        songs, count, scan_time = scanner.scan()
+        logger.info(f'Processed files: {count} in {scan_time} seconds')
 
         logger.info(f'Saving music data into the database...')
+        start_time = time.time()
         # For each song
         for song in songs:
             id = database.add_song(song)
+        
+        end_time = (time.time() - start_time) / 60.0
+        
+        logger.info(f'Music library updated successfully in {end_time} minutes.')
 
     except Exception as e:
         logger.error(e)

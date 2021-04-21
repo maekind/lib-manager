@@ -141,18 +141,32 @@ class Song:
         self._year = value
 
     @property
-    def image(self):
+    def album_image(self):
         '''
-        image property getter
+        album_image property getter
         '''
-        return self._image
+        return self._album_image
 
     @image.setter
-    def image(self, value):
+    def album_image(self, value):
         '''
-        image property setter
+        album_image property setter
         '''
-        self._image = value
+        self._album_image = value
+
+    @property
+    def artist_image(self):
+        '''
+        artist_image property getter
+        '''
+        return self._artist_image
+
+    @image.setter
+    def artist_image(self, value):
+        '''
+        artist_image property setter
+        '''
+        self._artist_image = value
 
     @property
     def audio_file(self):
