@@ -147,7 +147,7 @@ class Song:
         '''
         return self._album_image
 
-    @image.setter
+    @album_image.setter
     def album_image(self, value):
         '''
         album_image property setter
@@ -161,7 +161,7 @@ class Song:
         '''
         return self._artist_image
 
-    @image.setter
+    @artist_image.setter
     def artist_image(self, value):
         '''
         artist_image property setter

@@ -8,7 +8,7 @@ import mysql.connector
 from mysql.connector import errorcode
 from lib.media.song import Song
 from lib.media.definitions import DATABASE
-from lib.database.tables import TABLES_CREATE
+from lib.database.tables import TABLES_CREATE, TABLES_DROP
 
 
 class Db:
@@ -53,10 +53,27 @@ class Db:
         Initialize database: tables creation
         @freshdb: Weather the daabase instance has to be new.
         '''
-        self._logger.info(f"Initialising database...")
+        
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
+
+            if freshdb:
+                # Delete previous tables
+                self._logger.info(f"Initialising a fresh database ...")
+                for table_name in TABLES_DROP:
+                    self._logger.info(f"Dropping table {table_name}")
+                    drop_query = f"DROP TABLE {table_name}"
+                    try:
+                        cursor.execute(drop_query)
+                    except mysql.connector.Error as err:
+                        self._logger.error(err.msg)
+                else:
+                    self._logger.info(
+                        f"Table {table_name} dropped successfully.")
+            else:
+                self._logger.info(f"Initialising database ...")
+
 
             for table_name in TABLES_CREATE:
                 table_description = TABLES_CREATE[table_name]
@@ -188,9 +205,12 @@ class Db:
             id = cursor.fetchone()
             
             if id is None:
-                query = (f"INSERT INTO artist (name) VALUES ('{artist}')")
+                sql_insert_blob_query = """ INSERT INTO artist
+                          (name, image) VALUES (%s,%s)"""
+                insert_blob_tuple = (artist, song.artist_image)
+
+                cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 
-                cursor.execute(query)
                 self._connection.commit()
                 id = cursor.lastrowid
                 

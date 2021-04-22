@@ -65,20 +65,7 @@ TABLES_CREATE['playlist'] = (
     ") ENGINE=InnoDB")
 
 
-TABLES_DROP = {}
+TABLES_DROP = ["playlist", "songs", "album", "artist", "files"]
 
-TABLES_DROP['artist'] = ()
-
-
-TABLES_DROP['album'] = ()
-
-
-TABLES_DROP['files'] = ()
-
-
-TABLES_DROP['songs'] = ()
-
-
-TABLES_DROP['playlist'] = ()
 
 # 2021-04-18 19:34:53
