@@ -2,11 +2,22 @@
 
 TABLES_CREATE = {}
 
+TABLES_CREATE['login'] = (
+    "CREATE TABLE `login` ("
+    "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
+    "  `name` varchar(200) NOT NULL,"
+    "  `avatar` mediumblob,"
+    "  `email` varchar(200) NOT NULL,"
+    "  `password` varchar(50) NOT NULL,"
+    "  PRIMARY KEY (`id`)"
+    ") ENGINE=InnoDB")
+
 TABLES_CREATE['artist'] = (
     "CREATE TABLE `artist` ("
     "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
     "  `name` varchar(200) NOT NULL,"
     "  `image` mediumblob,"
+    "  `image_fanart` mediumblob,"
     "  PRIMARY KEY (`id`)"
     ") ENGINE=InnoDB")
 
@@ -64,8 +75,41 @@ TABLES_CREATE['playlist'] = (
     "  CONSTRAINT `playlist_ibfk_1` FOREIGN KEY (`song_id`) REFERENCES `songs` (`id`)"
     ") ENGINE=InnoDB")
 
+TABLES_CREATE['starred_songs'] = (
+    "CREATE TABLE `starred_songs` ("
+    "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
+    "  `user_id` int unsigned NOT NULL,"
+    "  `song_id` int unsigned NOT NULL,"
+    "  PRIMARY KEY (`id`),"
+    "  KEY `user_id` (`user_id`),"
+    "  KEY `song_id` (`song_id`),"
+    "  CONSTRAINT `starred_songs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `login` (`id`),"
+    "  CONSTRAINT `starred_songs_ibfk_2` FOREIGN KEY (`song_id`) REFERENCES `songs` (`id`)"
+    ") ENGINE=InnoDB")
 
-TABLES_DROP = ["playlist", "songs", "album", "artist", "files"]
+TABLES_CREATE['starred_albums'] = (
+    "CREATE TABLE `starred_albums` ("
+    "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
+    "  `user_id` int unsigned NOT NULL,"
+    "  `album_id` int unsigned NOT NULL,"
+    "  PRIMARY KEY (`id`),"
+    "  KEY `user_id` (`user_id`),"
+    "  KEY `album_id` (`album_id`),"
+    "  CONSTRAINT `starred_albums_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `login` (`id`),"
+    "  CONSTRAINT `starred_albums_ibfk_2` FOREIGN KEY (`album_id`) REFERENCES `album` (`id`)"
+    ") ENGINE=InnoDB")
+
+TABLES_CREATE['statistics'] = (
+    "CREATE TABLE `statistics` ("
+    "  `id` int unsigned NOT NULL AUTO_INCREMENT,"
+    "  `song_id` int unsigned NOT NULL,"
+    "  `played` int unsigned NOT NULL,"
+    "  PRIMARY KEY (`id`),"
+    "  KEY `song_id` (`song_id`),"
+    "  CONSTRAINT `statistics_ibfk_1` FOREIGN KEY (`song_id`) REFERENCES `songs` (`id`)"
+    ") ENGINE=InnoDB")
+
+TABLES_DROP = ["statistics", "starred_songs", "starred_albums", "playlist", "songs", "album", "artist", "files"]
 
 
 # 2021-04-18 19:34:53

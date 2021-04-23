@@ -169,6 +169,20 @@ class Song:
         self._artist_image = value
 
     @property
+    def artist_image_fanart(self):
+        '''
+        artist_image property getter
+        '''
+        return self._artist_image_fanart
+
+    @artist_image_fanart.setter
+    def artist_image_fanart(self, value):
+        '''
+        artist_image_fanart property setter
+        '''
+        self._artist_image_fanart = value
+
+    @property
     def audio_file(self):
         '''
         audio_file property getter

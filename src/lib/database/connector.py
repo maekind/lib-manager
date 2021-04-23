@@ -5,6 +5,7 @@ Database interface
 import json
 import os
 import mysql.connector
+import base64
 from mysql.connector import errorcode
 from lib.media.song import Song
 from lib.media.definitions import DATABASE
@@ -206,14 +207,14 @@ class Db:
             
             if id is None:
                 sql_insert_blob_query = """ INSERT INTO artist
-                          (name, image) VALUES (%s,%s)"""
-                insert_blob_tuple = (artist, song.artist_image)
+                          (name, image, image_fanart) VALUES (%s,%s,%s)"""
+                insert_blob_tuple = (artist, song.artist_image, song.artist_image_fanart)
 
                 cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 
                 self._connection.commit()
                 id = cursor.lastrowid
-                
+
             else:
                 id = id[0]
             

@@ -40,8 +40,7 @@ class Scanner:
                     # Adds song to the list
                     songs.append(song)
                     self._count += 1
-                    return (songs, self._count, 0)
-                    
+                                        
         total_time = time.time() - start_time
         return (songs, self._count, total_time)
 
