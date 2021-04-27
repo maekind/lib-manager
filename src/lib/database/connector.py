@@ -9,7 +9,7 @@ import base64
 from mysql.connector import errorcode
 from lib.media.song import Song
 from lib.media.definitions import DATABASE
-from lib.database.tables import TABLES_CREATE, TABLES_DROP
+from lib.database.tables import TABLES_CREATE, TABLES_DROP, QUERIES
 
 
 class Db:
@@ -90,7 +90,18 @@ class Db:
                 else:
                     self._logger.info(
                         f"Table {table_name} created successfully.")
-
+            for query in QUERIES:
+                query_description = QUERIES[query]
+                try:
+                    self._logger.info(f"Inserting data {query}...")
+                    cursor.execute(query_description)
+                    self._connection.commit()
+                except mysql.connector.Error as err:
+                    self._logger.error(err.msg)
+                else:
+                    self._logger.info(
+                        f"Data {query} inserted successfully.")
+            
             cursor.close()
             self._connection.close()
 

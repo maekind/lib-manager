@@ -1,4 +1,5 @@
-Flask==1.1.2
-tinytag==1.5.0
-mysql-connector-python==8.0.23
-beautifulsoup4==4.9.3
+Flask
+tinytag
+mysql-connector-python
+requests
+spotipy

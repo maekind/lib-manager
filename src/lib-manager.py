@@ -83,14 +83,14 @@ def init_db(freshdb):
         database.init_db(freshdb)
         logger.info(f'Scanning library ...')
         scanner = Scanner(os.environ['LIB_FOLDER'])
-        songs, count, scan_time = scanner.scan()
+        songs, count, scan_time = scanner.scan(database)
         logger.info(f'Processed files: {count} in {scan_time} seconds')
 
-        logger.info(f'Saving music data into the database...')
+        #logger.info(f'Saving music data into the database...')
         start_time = time.time()
         # For each song
-        for song in songs:
-            id = database.add_song(song)
+        # for song in songs:
+        #     id = database.add_song(song)
         
         end_time = (time.time() - start_time) / 60.0
         
