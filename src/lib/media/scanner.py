@@ -59,7 +59,19 @@ class Scanner:
         total_time = time.time() - start_time
         return (songs, self._count, total_time)
 
+    def scan_file(self, file_path, database):
+        '''
+        Function to launch scan in one file
+        @return: tuple of list of Song, processed files and elapsed time
+        '''
+        songs = []
+        start_time = time.time()
+        song = Tags.get_tags_from_file(file_path)
+        print(f"Got: {song.album} - {song.title}")
 
-
+        songs.append(song)
+        id = database.add_song(song)
+        total_time = time.time() - start_time
+        return (songs, None, total_time)
 
 

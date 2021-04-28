@@ -10,12 +10,14 @@ import time
 from flask import Flask
 from lib.database.connector import Db
 from lib.media.scanner import Scanner
+from urllib.parse import unquote
 
 
 author = 'Marco Espinosa'
 version = '1.0'
 email = 'hi@marcoespinosa.com'
 
+scanner = Scanner(os.environ['LIB_FOLDER'])
 app = Flask(__name__)
 
 
@@ -56,13 +58,26 @@ logger = configure_logging("lib-manager")
 
 @app.route('/')
 def hello_message():
-    return 'Event-manager for handling system file changes'
+    return 'Lib-manager for handling system file changes'
 
 
 @app.route('/created/<path:file>')
 def create_file(file):
     message = f'Create {file}'
     logger.info(message)
+
+    try:
+        start_time = time.time()
+        database = Db(logger)
+        file_unquote = f"/{unquote(file)}"
+        songs, count, scan_time = scanner.scan_file(file_unquote, database)
+        logger.info(f'File processed in {scan_time} seconds')
+        
+        end_time = (time.time() - start_time) / 60.0
+        logger.info(f'Music library updated successfully in {end_time} minutes.')
+    except FileNotFoundError:
+        logger.error(f'File {file_unquote} not found!')
+
     return message
 
 
@@ -70,6 +85,16 @@ def create_file(file):
 def delete_file(file):
     message = f'Delete {file}'
     logger.info(message)
+    
+    database = Db(logger)
+    file_unquote = f"/{unquote(file)}"
+    res = database.delete_file(file_unquote)
+
+    if res > 0:
+        logger.info(f"File '{file_unquote}' deleted successfully!")
+    else:
+        logger.error("File not found in database!")
+
     return message
 
 
@@ -82,7 +107,7 @@ def init_db(freshdb):
     try:
         database.init_db(freshdb)
         logger.info(f'Scanning library ...')
-        scanner = Scanner(os.environ['LIB_FOLDER'])
+        # scanner = Scanner(os.environ['LIB_FOLDER'])
         songs, count, scan_time = scanner.scan(database)
         logger.info(f'Processed files: {count} in {scan_time} seconds')
 
@@ -128,7 +153,7 @@ def main():
 
     # Check for arguments
     if args.address is not None and args.port is not None:
-        init_db(freshdb)
+        #init_db(freshdb)
         app.run(host=args.address, port=args.port)
     else:
         parser.print_help()

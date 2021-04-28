@@ -124,6 +124,30 @@ class Db:
 
         return song_id
 
+    def delete_file(self, file):
+        '''
+        Function to delete a file from database
+        @file: file path to delete
+        @return: deleted records
+        '''
+        res = 0
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+            print(file)
+            query = f"DELETE FROM files WHERE path = '{file}'"
+            
+            cursor.execute(query)
+            res = cursor.rowcount
+            self._connection.commit()
+            cursor.close()
+            self._connection.close()
+        
+        return res
+
+
+    ############## PRIVATE METHODS ##############
+
     def __add_song(self, song, file_id, artist_id, album_id):
         '''
         Function to get the file id related to a file
