@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# encoding:utf-8
 '''
 Spotify wrapper
 '''
@@ -12,6 +12,12 @@ from os import path
 from pathlib import Path
 from urllib.request import urlopen
 from lib.utils import Utils
+
+
+__author__ = 'Marco Espinosa'
+__version__ = '1.0'
+__email__ = 'hi@marcoespinosa.com'
+
 
 class Spotify:
     '''
@@ -38,7 +44,6 @@ class Spotify:
         base64_bytes = base64.b64encode(message_bytes)
         base64_message = base64_bytes.decode('ascii')
 
-
         headers['Authorization'] = f"Basic {base64_message}"
         data['grant_type'] = "client_credentials"
 
@@ -46,9 +51,8 @@ class Spotify:
 
         token = r.json()['access_token']
         expires = r.json()['expires_in']
-        
-        return (token, expires)
 
+        return (token, expires)
 
     @staticmethod
     def get_album_image(token, album_name, artist_name, client_id='70a5e19762ea4ae896e96756760d87ff', client_secret='67f055645e314dfb914854f7d7ed92ca'):
@@ -81,7 +85,7 @@ class Spotify:
         #         if image_item["height"] > image_height:
         #             image_height = image_item["height"]
         #             image_url = image_item["url"]
-            
+
         #     if image_url is not None:
         #         image = urllib.request.urlopen(image_url).read()
 
@@ -93,23 +97,28 @@ class Spotify:
         #     with open(f'/srv/music/images/albums/{album_name}.jpeg', "bw") as fil:
         #         fil.write(image)
         #     return base64.b64encode(image)
-        
+
         # return 0
 
-        client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
-        sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager) #spotify object to access API
+        client_credentials_manager = SpotifyClientCredentials(
+            client_id=client_id, client_secret=client_secret)
+        # spotify object to access API
+        sp = spotipy.Spotify(
+            client_credentials_manager=client_credentials_manager)
         print(artist_name)
-        result = sp.search(artist_name) #search query
+        result = sp.search(artist_name)  # search query
         #result['tracks']['items'][0]['artists']
         #Extract Artist's uri
-        artist_uri = result['tracks']['items'][0]['artists'][0]['uri']#Pull all of the artist's albums
-        sp_albums = sp.artist_albums(artist_uri, album_type='album')#Store artist's albums' names' and uris in separate lists
+        # Pull all of the artist's albums
+        artist_uri = result['tracks']['items'][0]['artists'][0]['uri']
+        # Store artist's albums' names' and uris in separate lists
+        sp_albums = sp.artist_albums(artist_uri, album_type='album')
         # album_names = []
         # album_uris = []
         # for i in range(len(sp_albums['items'])):
         #     album_names.append(sp_albums['items'][i]['name'])
         #     album_uris.append(sp_albums['items'][i]['uri'])
-            
+
         # album_names
         # album_uris
         print(sp_albums)
@@ -122,5 +131,3 @@ class Spotify:
 #     if image is not None:
 #         with open('./image.jpeg', "bw") as fil:
 #             fil.write(image)
-
-

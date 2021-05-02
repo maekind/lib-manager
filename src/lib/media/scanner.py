@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+# encoding:utf-8
 '''
 Scanner file
 '''
@@ -9,12 +9,19 @@ from lib.media.definitions import FORMAT_TYPES
 from lib.media.song import Song
 from lib.media.tags import Tags
 from lib.media.spotify import Spotify
+from lib.logger import Logger, Level
+
+__author__ = 'Marco Espinosa'
+__version__ = '1.0'
+__email__ = 'hi@marcoespinosa.com'
+
 
 class Scanner:
     '''
     Class to perform scanner actions into music folder
     to recreate the entire library
     '''
+
     def __init__(self, folder):
         '''
         Default constructor
@@ -22,6 +29,8 @@ class Scanner:
         '''
         self._folder = folder
         self._count = 0
+        # TODO: In production configure logger to info.
+        self._logger = Logger("scanner", Level.DEBUG)
 
     def scan(self, database):
         '''
@@ -50,12 +59,12 @@ class Scanner:
 
                     #song = Tags.get_tags_from_file(path.join(root, fil), token)
                     song = Tags.get_tags_from_file(path.join(root, fil))
-                    print(f"Got: {song.album} - {song.title}")
+                    self._logger.debug(f"Got: {song.album} - {song.title}")
                     # Adds song to the list
                     songs.append(song)
                     id = database.add_song(song)
                     self._count += 1
-                                        
+
         total_time = time.time() - start_time
         return (songs, self._count, total_time)
 
@@ -67,11 +76,9 @@ class Scanner:
         songs = []
         start_time = time.time()
         song = Tags.get_tags_from_file(file_path)
-        print(f"Got: {song.album} - {song.title}")
+        self._logger.debug(f"Got: {song.album} - {song.title}")
 
         songs.append(song)
         id = database.add_song(song)
         total_time = time.time() - start_time
         return (songs, None, total_time)
-
-

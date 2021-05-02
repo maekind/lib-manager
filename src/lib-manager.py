@@ -1,80 +1,89 @@
 #!/usr/bin/env python3
+# encoding:utf-8
 '''
 lib manager daemon
 '''
 import argparse
-import logging
 import sys
 import os
 import time
 from flask import Flask
+from flask import request
 from lib.database.connector import Db
 from lib.media.scanner import Scanner
-from urllib.parse import unquote
+from lib.utils import Utils
+from lib.logger import Logger
 
 
-author = 'Marco Espinosa'
-version = '1.0'
-email = 'hi@marcoespinosa.com'
+__author__ = 'Marco Espinosa'
+__version__ = '1.0'
+__email__ = 'hi@marcoespinosa.com'
 
 scanner = Scanner(os.environ['LIB_FOLDER'])
 app = Flask(__name__)
 
-
-def configure_logging(name):
-    '''
-    Function to configure loggind
-    @name: logger name
-    @return logger
-    '''
-    level = logging.DEBUG
-
-    log_setup = logging.getLogger(name)
-
-    # Formatting logger output
-    formatter = logging.Formatter(
-        "%(asctime)s [%(name)s] [%(levelname)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
-    )
-
-    # Setting logger to console
-    log_handler = logging.StreamHandler()
-
-    # Setting formatter
-    log_handler.setFormatter(formatter)
-
-    # Setting level
-    log_setup.setLevel(level)
-
-    # Creating handler to configured logger
-    log_setup.addHandler(log_handler)
-
-    # Set logger
-    return logging.getLogger(name)
-
-
 # Configure logger
-logger = configure_logging("lib-manager")
+logger = Logger("lib-manager")
 
 
 @app.route('/')
 def hello_message():
+    '''
+    Prints hello message from flask server
+    '''
     return 'Lib-manager for handling system file changes'
 
 
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    '''
+    Function to perform a login into the application
+    '''
+    if request.method == 'POST':
+        database = Db()
+        if database.valid_login(request.form['username'],
+                       request.form['password']):
+            return 'ok'
+        else:
+            logger.error('Invalid username/password')
+
+    return 'nok'
+
+
+
+
+@app.route('/scan')
+def scan_library():
+    '''
+    Function to handle scan library event
+    '''
+    message = f'Scan library event received!'
+    logger.info(message)
+
+    database = Db()
+    logger.info(f'Scanning library ...')
+    songs, count, scan_time = scanner.scan(database)
+
+    logger.info(f'Processed files: {count} in {scan_time} seconds')
+
 @app.route('/created/<path:file>')
 def create_file(file):
-    message = f'Create {file}'
+    '''
+    Function to handle create file event
+    '''
+    message = f'Create {file} event received!'
     logger.info(message)
 
     try:
         start_time = time.time()
-        database = Db(logger)
-        file_unquote = f"/{unquote(file)}"
+        database = Db()
+        file_unquote = Utils.unquote_file(file)
         songs, count, scan_time = scanner.scan_file(file_unquote, database)
         logger.info(f'File processed in {scan_time} seconds')
-        
+
         end_time = (time.time() - start_time) / 60.0
-        logger.info(f'Music library updated successfully in {end_time} minutes.')
+        logger.info(
+            f'Music library updated successfully in {end_time} minutes.')
     except FileNotFoundError:
         logger.error(f'File {file_unquote} not found!')
 
@@ -83,11 +92,14 @@ def create_file(file):
 
 @app.route('/deleted/<path:file>')
 def delete_file(file):
-    message = f'Delete {file}'
+    '''
+    Function to handle delete file event
+    '''
+    message = f'Delete {file} event receiived!'
     logger.info(message)
-    
-    database = Db(logger)
-    file_unquote = f"/{unquote(file)}"
+
+    database = Db()
+    file_unquote = Utils.unquote_file(file)
     res = database.delete_file(file_unquote)
 
     if res > 0:
@@ -103,23 +115,20 @@ def init_db(freshdb):
     Function to initialize database at first time
     '''
     # Initialize database
-    database = Db(logger)
+    database = Db()
     try:
         database.init_db(freshdb)
-        logger.info(f'Scanning library ...')
-        # scanner = Scanner(os.environ['LIB_FOLDER'])
-        songs, count, scan_time = scanner.scan(database)
-        logger.info(f'Processed files: {count} in {scan_time} seconds')
+        # TODO: Uncomment after test login
+        # logger.info(f'Scanning library ...')
+        # songs, count, scan_time = scanner.scan(database)
+        # logger.info(f'Processed files: {count} in {scan_time} seconds')
 
-        #logger.info(f'Saving music data into the database...')
-        start_time = time.time()
-        # For each song
-        # for song in songs:
-        #     id = database.add_song(song)
-        
-        end_time = (time.time() - start_time) / 60.0
-        
-        logger.info(f'Music library updated successfully in {end_time} minutes.')
+        # start_time = time.time()
+
+        # end_time = (time.time() - start_time) / 60.0
+
+        # logger.info(
+        #     f'Music library updated successfully in {end_time} minutes.')
 
     except Exception as e:
         logger.error(e)
@@ -148,12 +157,11 @@ def main():
 
     freshdb = False
     if args.freshdb is not None:
-        freshdb =args.freshdb
-    
+        freshdb = args.freshdb
 
     # Check for arguments
     if args.address is not None and args.port is not None:
-        #init_db(freshdb)
+        init_db(freshdb)
         app.run(host=args.address, port=args.port)
     else:
         parser.print_help()

@@ -1,7 +1,11 @@
-#!/usr/bin/env python3
+# encoding:utf-8
 '''
 Defintions for music module
 '''
+__author__ = 'Marco Espinosa'
+__version__ = '1.0'
+__email__ = 'hi@marcoespinosa.com'
+
 
 # Audio formats accepted
 FORMAT_TYPES = [".mp3", ".flac", ".wma", ".wav",
@@ -9,6 +13,3 @@ FORMAT_TYPES = [".mp3", ".flac", ".wma", ".wav",
 
 # Database name
 DATABASE = "music"
-
-
-

@@ -1,7 +1,12 @@
-#!/usr/bin/env python3 
+# encoding:utf-8
 '''
 Song model file
 '''
+
+__author__ = 'Marco Espinosa'
+__version__ = '1.0'
+__email__ = 'hi@marcoespinosa.com'
+
 
 class Song:
     '''
@@ -12,7 +17,6 @@ class Song:
         '''
         Default constructor
         '''
-        
 
     @property
     def album(self):

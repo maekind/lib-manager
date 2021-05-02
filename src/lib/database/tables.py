@@ -1,4 +1,13 @@
-# Database TABLES_CREATE and initializations
+# encoding:utf-8
+'''
+Database TABLES_CREATE and initializations
+'''
+
+
+__author__ = 'Marco Espinosa'
+__version__ = '1.0'
+__email__ = 'hi@marcoespinosa.com'
+
 
 TABLES_CREATE = {}
 
@@ -23,9 +32,10 @@ TABLES_CREATE['login'] = (
     "  `name` varchar(200) NOT NULL,"
     "  `avatar` mediumblob,"
     "  `email` varchar(200) NOT NULL,"
-    "  `password` varchar(50) NOT NULL,"
+    "  `password` varchar(512) NOT NULL,"
     "  `spotify_client_id` varchar(128),"
     "  `spotify_client_secret` varchar(128),"
+    "  `salt` varchar(128),"
     "  PRIMARY KEY (`id`)"
     ") ENGINE=InnoDB")
 
@@ -142,9 +152,9 @@ TABLES_CREATE['statistics'] = (
     "  CONSTRAINT `statistics_ibfk_1` FOREIGN KEY (`song_id`) REFERENCES `songs` (`id`) ON DELETE CASCADE"
     ") ENGINE=InnoDB")
 
-TABLES_DROP = ["status", "status_types", "configuration",  
-                "statistics", "starred_songs", "starred_albums",
-                "playlist", "login", "songs", "album", "artist", "files"]
+TABLES_DROP = ["status", "status_types", "configuration",
+               "statistics", "starred_songs", "starred_albums",
+               "playlist", "login", "songs", "album", "artist", "files"]
 
 QUERIES["status_types"] = """ INSERT INTO status_types
                           (type) VALUES 

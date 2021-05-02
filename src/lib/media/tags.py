@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# encoding:utf-8
 '''
 Tags file
 '''
@@ -14,6 +14,10 @@ from pathlib import Path
 from tinytag import TinyTag
 from lib.media.song import Song
 from lib.media.spotify import Spotify
+
+__author__ = 'Marco Espinosa'
+__version__ = '1.0'
+__email__ = 'hi@marcoespinosa.com'
 
 
 class Tags:
@@ -57,7 +61,7 @@ class Tags:
             song.artist)
         song.artist_image = artist_image if not None else 0
         song.artist_image_fanart = artist_image_fanart if not None else 0
-        
+
         # TODO: Implement spotify interface
         # Try to get album image from spotify, if token is provided
         # if token is not None and song.album != "Unknown":
@@ -66,8 +70,6 @@ class Tags:
         song.album_image = 0
 
         return song
-
-
 
     @staticmethod
     def fetch_artist_images(artist):
@@ -113,5 +115,3 @@ class Tags:
             artist_image_fanart = base64.b64encode(Utils.get_default_image())
 
         return (artist_image, artist_image_fanart)
-
-    

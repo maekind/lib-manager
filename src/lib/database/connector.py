@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# encoding:utf-8
 '''
 Database interface
 '''
@@ -10,6 +10,12 @@ from mysql.connector import errorcode
 from lib.media.song import Song
 from lib.media.definitions import DATABASE
 from lib.database.tables import TABLES_CREATE, TABLES_DROP, QUERIES
+from lib.logger import Logger
+from lib.utils import Utils
+
+__author__ = 'Marco Espinosa'
+__version__ = '1.0'
+__email__ = 'hi@marcoespinosa.com'
 
 
 class Db:
@@ -17,7 +23,7 @@ class Db:
     Handles database actions
     '''
 
-    def __init__(self, logger):
+    def __init__(self):
         '''
         Default constructor
         '''
@@ -25,7 +31,7 @@ class Db:
         self._password = os.environ['DB_PASSWORD']
         self._host = os.environ['DB_HOST']
         self._port = os.environ['DB_PORT']
-        self._logger = logger
+        self._logger = Logger("database")
         self._database = DATABASE
 
     def __connect(self):
@@ -54,13 +60,12 @@ class Db:
         Initialize database: tables creation
         @freshdb: Weather the daabase instance has to be new.
         '''
-        
+
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
 
-            if freshdb:
-                # Delete previous tables
+            if freshdb:                # Delete previous tables
                 self._logger.info(f"Initialising a fresh database ...")
                 for table_name in TABLES_DROP:
                     self._logger.info(f"Dropping table {table_name}")
@@ -74,7 +79,6 @@ class Db:
                         f"Table {table_name} dropped successfully.")
             else:
                 self._logger.info(f"Initialising database ...")
-
 
             for table_name in TABLES_CREATE:
                 table_description = TABLES_CREATE[table_name]
@@ -101,7 +105,18 @@ class Db:
                 else:
                     self._logger.info(
                         f"Data {query} inserted successfully.")
+
+            # Create admin login
+            # sql_insert_login_query = """ INSERT INTO login
+            #               (name, email, password, salt) VALUES (%s,%s,%s,%s)"""
+            # salt = Utils.get_salt()
+            # sql_insert_login_query = (
+            #     "admin", "admin@admin.com", Utils.hash_password("12345678", salt), salt)
+
             
+            # cursor.execute(sql_insert_login_query, sql_insert_login_query)
+            # self._connection.commit()
+
             cursor.close()
             self._connection.close()
 
@@ -136,14 +151,46 @@ class Db:
             cursor = self._connection.cursor()
             print(file)
             query = f"DELETE FROM files WHERE path = '{file}'"
-            
+
             cursor.execute(query)
             res = cursor.rowcount
             self._connection.commit()
             cursor.close()
             self._connection.close()
-        
+
         return res
+
+    def valid_login(self, username, password):
+        '''
+        Function to valid a username/password login
+        @username: user name
+        @password: user passowrd
+        @return a boolean variable indicating wheather the username and password exist or not
+        '''
+        self._logger.info(f"Checking for login: {username}/{password}")
+        res = None
+        query = (f"SELECT salt, password FROM login WHERE email = '{username}'")
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query)
+            res = cursor.fetchone()
+
+            cursor.close()
+            self._connection.close()
+
+            # Check for results
+            if res is not None:
+                salt = res[0]
+                db_password = res[1]
+                
+                # if hashed passwords are equal
+                if db_password == Utils.hash_password(password, salt):
+                    return True
+                    
+        return False
 
 
     ############## PRIVATE METHODS ##############
@@ -162,24 +209,24 @@ class Db:
         id = None
         title = song.title.replace("'", "\\'")
         query = (f"SELECT id FROM songs WHERE title = '{title}'")
-        
+
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
 
             cursor.execute(query)
             id = cursor.fetchone()
-            
+
             if id is None:
-                query = (f"INSERT INTO songs (title, duration, track, file_id, album_id, artist_id) VALUES ('{title}', {song.duration}, {song.track}, {file_id}, {album_id}, {artist_id})")
+                query = (
+                    f"INSERT INTO songs (title, duration, track, file_id, album_id, artist_id) VALUES ('{title}', {song.duration}, {song.track}, {file_id}, {album_id}, {artist_id})")
                 cursor.execute(query)
                 self._connection.commit()
                 id = cursor.lastrowid
-                
+
             else:
                 id = id[0]
 
-            
             cursor.close()
             self._connection.close()
 
@@ -203,19 +250,19 @@ class Db:
 
             cursor.execute(query)
             id = cursor.fetchone()
-            
+
             if id is None:
-                
+
                 query = (
                     f"INSERT INTO files (path) VALUES ('{audio_file}')")
-                
+
                 cursor.execute(query)
                 self._connection.commit()
                 id = cursor.lastrowid
-                
+
             else:
                 id = id[0]
-            
+
             cursor.close()
             self._connection.close()
 
@@ -239,20 +286,21 @@ class Db:
 
             cursor.execute(query)
             id = cursor.fetchone()
-            
+
             if id is None:
                 sql_insert_blob_query = """ INSERT INTO artist
                           (name, image, image_fanart) VALUES (%s,%s,%s)"""
-                insert_blob_tuple = (artist, song.artist_image, song.artist_image_fanart)
+                insert_blob_tuple = (
+                    artist, song.artist_image, song.artist_image_fanart)
 
                 cursor.execute(sql_insert_blob_query, insert_blob_tuple)
-                
+
                 self._connection.commit()
                 id = cursor.lastrowid
 
             else:
                 id = id[0]
-            
+
             cursor.close()
             self._connection.close()
 
@@ -278,17 +326,18 @@ class Db:
 
             cursor.execute(query)
             id = cursor.fetchone()
-            
+
             if id is None:
-                query = (f"INSERT INTO album (name, genre, tracks, year, artist_id) VALUES ('{album}', '{song.genre}', {song.track_total}, {song.year}, {artist_id})")
-                
+                query = (
+                    f"INSERT INTO album (name, genre, tracks, year, artist_id) VALUES ('{album}', '{song.genre}', {song.track_total}, {song.year}, {artist_id})")
+
                 cursor.execute(query)
                 self._connection.commit()
                 id = cursor.lastrowid
-                
+
             else:
                 id = id[0]
-            
+
             cursor.close()
             self._connection.close()
 
