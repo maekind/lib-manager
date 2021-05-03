@@ -2,8 +2,7 @@
 '''
 Utils functions
 '''
-import hashlib
-import uuid
+import bcrypt
 from os import path
 from pathlib import Path
 from urllib.parse import unquote
@@ -49,32 +48,21 @@ class Utils:
         return f"/{unquote(file)}"
 
     @staticmethod
-    def hash_password(password, salt, bytes=512):
+    def hash_password(password):
         '''
         Function that hash a password with a given salt
         @password: user plain-text password
-        @salt: user configured salt
-        @bytes: hash bytes. 512 by default. Options: 1, 256 or 512
-        @return: passwor hashed in bytes
+        @return: password hashed in bytes. It contains the salt.
         '''
-        if bytes == 1:
-            # sha1
-            return hashlib.sha1(password + salt).digest()
-        elif bytes == 256:
-            # sha256
-            return hashlib.sha256(password + salt).digest()
-        elif bytes == 512:
-            # sha512 - default
-            
-            return hashlib.sha512(password + salt).digest()
-
-        return None
+        return bcrypt.hashpw(password, bcrypt.gensalt())
 
     @staticmethod
-    def get_salt():
+    def check_password(plain_text_password, hashed_password):
         '''
-        Function to return a new salt in bytes format
-        @return: salt in bytes format
+        Function to compare two passowrds
+        @plain_text_password: plain text password entered by a user
+        @hashed_password: password retrived from database for a given user
+        @return: bool. Result of comparisition.
         '''
-        return uuid.uuid4().bytes
+        return bcrypt.checkpw(plain_text_password, hashed_password)
 

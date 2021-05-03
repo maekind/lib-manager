@@ -32,10 +32,9 @@ TABLES_CREATE['login'] = (
     "  `name` varchar(200) NOT NULL,"
     "  `avatar` mediumblob,"
     "  `email` varchar(200) NOT NULL,"
-    "  `password` varchar(512) NOT NULL,"
+    "  `password` blob NOT NULL,"
     "  `spotify_client_id` varchar(128),"
     "  `spotify_client_secret` varchar(128),"
-    "  `salt` varchar(128),"
     "  PRIMARY KEY (`id`)"
     ") ENGINE=InnoDB")
 

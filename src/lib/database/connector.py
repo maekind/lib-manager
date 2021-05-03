@@ -94,6 +94,7 @@ class Db:
                 else:
                     self._logger.info(
                         f"Table {table_name} created successfully.")
+
             for query in QUERIES:
                 query_description = QUERIES[query]
                 try:
@@ -102,23 +103,38 @@ class Db:
                     self._connection.commit()
                 except mysql.connector.Error as err:
                     self._logger.error(err.msg)
+                except Exception as err:
+                    self._logger.error(err)
                 else:
                     self._logger.info(
                         f"Data {query} inserted successfully.")
 
-            # Create admin login
-            # sql_insert_login_query = """ INSERT INTO login
-            #               (name, email, password, salt) VALUES (%s,%s,%s,%s)"""
-            # salt = Utils.get_salt()
-            # sql_insert_login_query = (
-            #     "admin", "admin@admin.com", Utils.hash_password("12345678", salt), salt)
-
             
-            # cursor.execute(sql_insert_login_query, sql_insert_login_query)
-            # self._connection.commit()
-
             cursor.close()
             self._connection.close()
+
+            # Create admin login
+            # TODO: only for testing purpouses
+            username = "admin@admin.com"
+            if not self.__user_exists(username):
+
+                self.__connect()
+                    
+                cursor = self._connection.cursor()
+                
+                sql_insert_login_query = """ INSERT INTO login
+                            (name, email, password) VALUES (%s,%s,%s)"""
+                
+                password = "12345678"
+                            
+                sql_insert_login_tuple = (
+                    "admin", username, Utils.hash_password(password.encode('utf-8')))
+
+                cursor.execute(sql_insert_login_query, sql_insert_login_tuple)
+                self._connection.commit()
+                cursor.close()
+                self._connection.close()
+                
 
             self._logger.info(f"Database initialized successfully.")
 
@@ -169,7 +185,7 @@ class Db:
         '''
         self._logger.info(f"Checking for login: {username}/{password}")
         res = None
-        query = (f"SELECT salt, password FROM login WHERE email = '{username}'")
+        query = (f"SELECT password FROM login WHERE email = '{username}'")
 
         self.__connect()
         if self._connection is not None:
@@ -183,17 +199,46 @@ class Db:
 
             # Check for results
             if res is not None:
-                salt = res[0]
-                db_password = res[1]
+                db_password = res[0]
                 
                 # if hashed passwords are equal
-                if db_password == Utils.hash_password(password, salt):
+                if Utils.check_password(password.encode('utf-8'), db_password):
                     return True
                     
         return False
 
 
     ############## PRIVATE METHODS ##############
+
+    def __user_exists(self, username):
+        '''
+        Function to check if a username already exists
+        @username: user name
+        @return: bool. The result.
+        '''
+        self._logger.info(f"Checking for username existance ...")
+        res = None
+        query = (f"SELECT id FROM login WHERE email = '{username}'")
+
+        
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query)
+            res = cursor.fetchone()
+
+            cursor.close()
+            self._connection.close()
+
+            # Check for results
+            if res is not None:
+                return True
+        
+        self._logger.error(f"User {username} exists!")         
+        self._connection.close()
+
+        return False
 
     def __add_song(self, song, file_id, artist_id, album_id):
         '''

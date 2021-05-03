@@ -1,3 +1,4 @@
+bcrypt
 Flask
 tinytag
 mysql-connector-python
