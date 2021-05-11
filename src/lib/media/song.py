@@ -33,18 +33,18 @@ class Song:
         self._album = value
 
     @property
-    def albumartist(self):
+    def album_artist(self):
         '''
-        albumartist property getter
+        album_artist property getter
         '''
-        return self._albumartist
+        return self._album_artist
 
-    @albumartist.setter
-    def albumartist(self, value):
+    @album_artist.setter
+    def album_artist(self, value):
         '''
-        albumartist property setter
+        album_artist property setter
         '''
-        self._albumartist = value
+        self._album_artist = value
 
     @property
     def artist(self):

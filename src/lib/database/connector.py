@@ -9,7 +9,7 @@ import base64
 from mysql.connector import errorcode
 from lib.media.song import Song
 from lib.media.definitions import DATABASE
-from lib.database.tables import TABLES_CREATE, TABLES_DROP, QUERIES
+from lib.database.tables import TABLES_CREATE, TABLES_DROP, QUERIES, VIEWS_DROP, VIEWS_CREATE
 from lib.logger import Logger
 from lib.utils import Utils
 
@@ -65,8 +65,21 @@ class Db:
         if self._connection is not None:
             cursor = self._connection.cursor()
 
-            if freshdb:                # Delete previous tables
+            if freshdb:  # Delete previous structure
                 self._logger.info(f"Initialising a fresh database ...")
+               # Delete views
+                for view_name in VIEWS_DROP:
+                    self._logger.info(f"Dropping view {view_name}")
+                    drop_query = f"DROP VIEW {view_name}"
+                    try:
+                        cursor.execute(drop_query)
+                    except mysql.connector.Error as err:
+                        self._logger.error(err.msg)
+                else:
+                    self._logger.info(
+                        f"View {view_name} dropped successfully.")
+
+              # Delete tables
                 for table_name in TABLES_DROP:
                     self._logger.info(f"Dropping table {table_name}")
                     drop_query = f"DROP TABLE {table_name}"
@@ -80,6 +93,7 @@ class Db:
             else:
                 self._logger.info(f"Initialising database ...")
 
+            # Create tables
             for table_name in TABLES_CREATE:
                 table_description = TABLES_CREATE[table_name]
                 try:
@@ -95,6 +109,23 @@ class Db:
                     self._logger.info(
                         f"Table {table_name} created successfully.")
 
+            # Create views
+            for views_name in VIEWS_CREATE:
+                view_description = VIEWS_CREATE[views_name]
+                try:
+                    self._logger.info(f"Creating view {views_name}...")
+                    cursor.execute(view_description)
+                except mysql.connector.Error as err:
+                    if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+                        self._logger.error(
+                            f"View {views_name} already exists: nothing to do.")
+                    else:
+                        self._logger.error(err.msg)
+                else:
+                    self._logger.info(
+                        f"View {views_name} created successfully.")
+
+           # Initialize content
             for query in QUERIES:
                 query_description = QUERIES[query]
                 try:
@@ -109,7 +140,6 @@ class Db:
                     self._logger.info(
                         f"Data {query} inserted successfully.")
 
-            
             cursor.close()
             self._connection.close()
 
@@ -119,14 +149,14 @@ class Db:
             if not self.__user_exists(username):
 
                 self.__connect()
-                    
+
                 cursor = self._connection.cursor()
-                
+
                 sql_insert_login_query = """ INSERT INTO login
                             (name, email, password) VALUES (%s,%s,%s)"""
-                
+
                 password = "12345678"
-                            
+
                 sql_insert_login_tuple = (
                     "admin", username, Utils.hash_password(password.encode('utf-8')))
 
@@ -134,7 +164,6 @@ class Db:
                 self._connection.commit()
                 cursor.close()
                 self._connection.close()
-                
 
             self._logger.info(f"Database initialized successfully.")
 
@@ -200,12 +229,104 @@ class Db:
             # Check for results
             if res is not None:
                 db_password = res[0]
-                
+
                 # if hashed passwords are equal
                 if Utils.check_password(password.encode('utf-8'), db_password):
                     return True
-                    
+
         return False
+
+    def album_exists(self, album):
+        '''
+        Check the existance of an album in the database
+        @album: album name
+        @return: bool. wheather the album exist.
+        '''
+        id = None
+        album = album.replace("'", "\\'")
+        query = (f"SELECT id FROM album WHERE name = '{album}'")
+
+        res = False
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query)
+            id = cursor.fetchone()
+
+            cursor.close()
+            self._connection.close()
+
+            if id is not None:
+                res = True
+
+        self._connection.close()
+
+        return res
+
+    def artist_exists(self, artist):
+        '''
+        Check the existance of an artist in the database
+        @artist: artist name
+        @return: bool. wheather the artist exist.
+        '''
+        id = None
+        artist = artist.replace("'", "\\'")
+        query = (f"SELECT id FROM artist WHERE name = '{artist}'")
+
+        res = False
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query)
+            id = cursor.fetchone()
+
+            cursor.close()
+            self._connection.close()
+
+            if id is not None:
+                res = True
+
+        self._connection.close()
+
+        return res
+
+    def get_albums_data(self):
+        '''
+        Function to fetch albums data
+        @return: database result 
+        '''
+        query = (f"SELECT * FROM albums_info_by_artist_album")
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query)
+            data = [] 
+            for (artist_name, album_name, duration, tracks) in cursor:
+                data_dict = {}
+               # album_data = {"album_name": album_name, "artist_name": artist_name, "duration": {duration}, "tracks": {tracks}}
+                data_dict.update({"album_name": album_name} )
+                data_dict.update({"artist_name": artist_name} )
+                data_dict.update({"duration": duration} )
+                data_dict.update({"tracks": tracks} )
+                
+                data.append(data_dict)
+
+           #  {"album_name":{"artist_name":"pepe","duration":135.252,"tracks":25}}
+
+            cursor.close()
+            self._connection.close()
+
+        self._connection.close()
+        dict ={}
+        dict.update({"albums": data})
+        
+        return dict
 
 
     ############## PRIVATE METHODS ##############
@@ -220,7 +341,6 @@ class Db:
         res = None
         query = (f"SELECT id FROM login WHERE email = '{username}'")
 
-        
         self.__connect()
         if self._connection is not None:
             cursor = self._connection.cursor()
@@ -234,8 +354,8 @@ class Db:
             # Check for results
             if res is not None:
                 return True
-        
-        self._logger.error(f"User {username} exists!")         
+
+        self._logger.error(f"User {username} exists!")
         self._connection.close()
 
         return False
@@ -373,10 +493,13 @@ class Db:
             id = cursor.fetchone()
 
             if id is None:
-                query = (
-                    f"INSERT INTO album (name, genre, tracks, year, artist_id) VALUES ('{album}', '{song.genre}', {song.track_total}, {song.year}, {artist_id})")
+                sql_insert_blob_query = """ INSERT INTO album
+                          (name, genre, tracks, year, image, artist_id) VALUES (%s,%s,%s,%s,%s,%s)"""
+                insert_blob_tuple = (
+                    album, song.genre, song.track_total, song.year, song.album_image, artist_id)
 
-                cursor.execute(query)
+                cursor.execute(sql_insert_blob_query, insert_blob_tuple)
+
                 self._connection.commit()
                 id = cursor.lastrowid
 

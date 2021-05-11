@@ -16,7 +16,6 @@ class Utils:
     '''
     Class to handle util functions
     '''
-
     @staticmethod
     def replace_special_chars(text):
         '''

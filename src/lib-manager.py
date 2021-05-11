@@ -7,6 +7,7 @@ import argparse
 import sys
 import os
 import time
+import json
 from flask import Flask
 from flask import request
 from lib.database.connector import Db
@@ -34,6 +35,25 @@ def hello_message():
     return 'Lib-manager for handling system file changes'
 
 
+@app.route('/get_albums')
+def get_albums():
+    '''
+    Function to fetch albums info to database.
+    @returns: json string 
+    '''
+    message = f'get albums event received!'
+    logger.info(message)
+    try:
+        database = Db()
+        logger.info(f'Getting albums data ...')
+        json_string = json.dumps(database.get_albums_data(), indent=4, sort_keys=True)
+        
+        return json_string
+    except Exception as ex:
+     
+        logger.error(f"Erro fetching album data. {ex} ")
+        return ''
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     '''
@@ -42,7 +62,7 @@ def login():
     if request.method == 'POST':
         database = Db()
         if database.valid_login(request.form['username'],
-                       request.form['password']):
+                                request.form['password']):
             return 'ok'
         else:
             logger.error('Invalid username/password')
@@ -50,21 +70,24 @@ def login():
     return 'nok'
 
 
-
-
 @app.route('/scan')
 def scan_library():
     '''
     Function to handle scan library event
     '''
+    # TODO: new thread?
     message = f'Scan library event received!'
     logger.info(message)
+    try:
+        database = Db()
+        logger.info(f'Scanning library ...')
+        songs, count, scan_time = scanner.scan(database)
 
-    database = Db()
-    logger.info(f'Scanning library ...')
-    songs, count, scan_time = scanner.scan(database)
+        logger.info(f'Processed files: {count} in {scan_time} seconds')
+        return 'ok'
+    except:
+        return 'nok'
 
-    logger.info(f'Processed files: {count} in {scan_time} seconds')
 
 @app.route('/created/<path:file>')
 def create_file(file):
@@ -75,6 +98,7 @@ def create_file(file):
     logger.info(message)
 
     try:
+        # TODO: Check format type
         start_time = time.time()
         database = Db()
         file_unquote = Utils.unquote_file(file)
@@ -98,6 +122,7 @@ def delete_file(file):
     message = f'Delete {file} event receiived!'
     logger.info(message)
 
+    # TODO: Check format type
     database = Db()
     file_unquote = Utils.unquote_file(file)
     res = database.delete_file(file_unquote)
@@ -118,17 +143,6 @@ def init_db(freshdb):
     database = Db()
     try:
         database.init_db(freshdb)
-        # TODO: Uncomment after test login
-        # logger.info(f'Scanning library ...')
-        # songs, count, scan_time = scanner.scan(database)
-        # logger.info(f'Processed files: {count} in {scan_time} seconds')
-
-        # start_time = time.time()
-
-        # end_time = (time.time() - start_time) / 60.0
-
-        # logger.info(
-        #     f'Music library updated successfully in {end_time} minutes.')
 
     except Exception as e:
         logger.error(e)
@@ -161,8 +175,8 @@ def main():
 
     # Check for arguments
     if args.address is not None and args.port is not None:
-        init_db(freshdb)
-        app.run(host=args.address, port=args.port)
+       #init_db(freshdb)
+        app.run(host=args.address, port=args.port, debug=False)
     else:
         parser.print_help()
         exit(1)

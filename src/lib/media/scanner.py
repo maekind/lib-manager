@@ -46,20 +46,15 @@ class Scanner:
 
         # Iterate each element of the folder
         for root, subdirs, files in walk(self._folder):
+            self._logger.debug(f"Checking into {root}")
             for fil in files:
+                self._logger.debug(f"Checking for file {fil}")
                 # If file is an accepted audio format then:
                 if Path(fil).suffix in FORMAT_TYPES:
-                    # Check fot token expired time.
-                    # If time expired, renew token.
-                    # elapsed_time = time.time() - expired_time
-                    # if elapsed_time >= expire:
-                    #     token, expire = Spotify.get_token()
-                    #     expired_time = time.time()
-                    #     print("Token renewed")
-
-                    #song = Tags.get_tags_from_file(path.join(root, fil), token)
+                    # TODO: Maybe check if file exists in database before launching get_tags!
+                    # That would be speedy!
                     song = Tags.get_tags_from_file(path.join(root, fil))
-                    self._logger.debug(f"Got: {song.album} - {song.title}")
+                    self._logger.debug(f"Got: {song.artist} - {song.album} - {song.title}")
                     # Adds song to the list
                     songs.append(song)
                     id = database.add_song(song)

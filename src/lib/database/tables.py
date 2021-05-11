@@ -13,6 +13,8 @@ TABLES_CREATE = {}
 
 QUERIES = {}
 
+VIEWS_CREATE = {}
+
 TABLES_CREATE['status_types'] = (
     "CREATE TABLE `status_types` ("
     "  `type` varchar(50),"
@@ -155,6 +157,8 @@ TABLES_DROP = ["status", "status_types", "configuration",
                "statistics", "starred_songs", "starred_albums",
                "playlist", "login", "songs", "album", "artist", "files"]
 
+
+
 QUERIES["status_types"] = """ INSERT INTO status_types
                           (type) VALUES 
                           ('ERROR'),
@@ -163,4 +167,13 @@ QUERIES["status_types"] = """ INSERT INTO status_types
                           ('NOT INIT'),
                           ('INIT') """
 
-# 2021-04-18 19:34:53
+VIEWS_CREATE["albums_info_by_artist_album"] = (
+    "CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `albums_info_by_artist_album`"
+    " AS select `ar`.`name` AS `artist_name`,`a`.`name` AS `album_name`,(sum(`s`.`duration`) / 60) AS `duration`,count(`s`.`title`) AS `tracks`"
+    " from ((`songs` `s` join `album` `a` on((`a`.`id` = `s`.`album_id`)))"
+    " join `artist` `ar` on((`ar`.`id` = `s`.`artist_id`)))"
+    " group by `ar`.`name`,`a`.`name` order by `ar`.`name`,`a`.`name`")
+
+VIEWS_DROP = ["albums_info_by_artist_album"] 
+
+# CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `albums_info_by_artist_album` AS select `ar`.`name` AS `artist_name`,`a`.`name` AS `album_name`,(sum(`s`.`duration`) / 60) AS `duration`,count(`s`.`title`) AS `tracks` from ((`songs` `s` join `album` `a` on((`a`.`id` = `s`.`album_id`))) join `artist` `ar` on((`ar`.`id` = `s`.`artist_id`))) group by `ar`.`name`,`a`.`name` order by `ar`.`name`,`a`.`name`;
