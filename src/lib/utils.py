@@ -3,6 +3,7 @@
 Utils functions
 '''
 import bcrypt
+import re
 from os import path
 from pathlib import Path
 from urllib.parse import unquote
@@ -17,13 +18,26 @@ class Utils:
     Class to handle util functions
     '''
     @staticmethod
+    def format_string(str):
+        '''
+        Checks if string is null or empty or only have whitespaces
+        '''
+        new_str = ""
+        if re.match('^ +', str):
+            new_str = str.lstrip()
+        elif str is None or str == "":
+            new_str = "Unknown"
+
+        return new_str
+
+    @staticmethod
     def replace_special_chars(text):
         '''
         Replace special chars
         '''
-        for ch in ['\\','`','*','_','{','}','[',']','(',')','>','#','+','-','.','!','$','\'', ':', '(', ')', '/']:
+        for ch in ['\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '>', '#', '+', '-', '.', '!', '$', '\'', ':', '(', ')', '/']:
             if ch in text:
-                text = text.replace(ch,"")
+                text = text.replace(ch, "")
 
         return text
 
@@ -64,4 +78,3 @@ class Utils:
         @return: bool. Result of comparisition.
         '''
         return bcrypt.checkpw(plain_text_password, hashed_password)
-

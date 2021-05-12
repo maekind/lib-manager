@@ -6,6 +6,9 @@ LABEL maekind.webplayer.name="lib-manager" \
       maekind.webplayer.description="Listen for incoming file system change events and webserver requests" \
       maekind.webplayer.email="hi@marcoespinosa.es"
 
+# Install build dependencies for python-Levenshtein package
+RUN apt update && apt install -y gcc python3-dev
+
 # Change working dir to app and copy requirements
 WORKDIR /app
 COPY requirements.txt requirements.txt
@@ -20,6 +23,7 @@ RUN pip3 install -r requirements.txt
 ENV PATH="/app:${PATH}"
 
 # Set flask to development mode
+# TODO: Remove in production an set WSGY.
 ENV FLASK_ENV=development
 
 # Entry command for docker image

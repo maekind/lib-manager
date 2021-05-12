@@ -44,12 +44,12 @@ class Tags:
 
         # Saving information into a Song instance
         song = Song()
-        song.album = tag.album if tag.album is not None else "Unknown"
-        song.album_artist = tag.albumartist if tag.albumartist is not None else "Unknown"
-        song.artist = tag.artist if tag.artist is not None else "Unknown"
+        song.album = Utils.format_string(tag.album)
+        song.album_artist = Utils.format_string(tag.albumartist)
+        song.artist = Utils.format_string(tag.artist)
         song.duration = tag.duration if tag.duration is not None else 0
-        song.genre = tag.genre if tag.genre is not None else "Unknown"
-        song.title = tag.title if tag.title is not None and tag.title != "" else "Unknown"
+        song.genre = Utils.format_string(tag.genre)
+        song.title = Utils.format_string(tag.title)
         song.track = tag.track if tag.track is not None else 0
         song.track_total = tag.track_total if tag.track_total is not None else 0
         if tag.year is not None and tag.year != "":

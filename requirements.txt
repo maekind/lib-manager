@@ -4,3 +4,5 @@ tinytag
 mysql-connector-python
 requests
 spotipy
+fuzzywuzzy
+python-Levenshtein

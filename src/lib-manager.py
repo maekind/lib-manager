@@ -175,7 +175,7 @@ def main():
 
     # Check for arguments
     if args.address is not None and args.port is not None:
-       #init_db(freshdb)
+        init_db(freshdb)
         app.run(host=args.address, port=args.port, debug=False)
     else:
         parser.print_help()
