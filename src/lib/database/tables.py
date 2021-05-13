@@ -169,10 +169,10 @@ QUERIES["status_types"] = """ INSERT INTO status_types
 
 VIEWS_CREATE["albums_info_by_artist_album"] = (
     "CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `albums_info_by_artist_album`"
-    " AS select `ar`.`name` AS `artist_name`,`a`.`name` AS `album_name`,(sum(`s`.`duration`) / 60) AS `duration`,count(`s`.`title`) AS `tracks`"
+    " AS select `ar`.`name` AS `artist_name`,`a`.`name` AS `album_name`,(sum(`s`.`duration`) / 60) AS `duration`,count(`s`.`title`) AS `tracks`, `a`.`image` AS `album_image`"
     " from ((`songs` `s` join `album` `a` on((`a`.`id` = `s`.`album_id`)))"
     " join `artist` `ar` on((`ar`.`id` = `s`.`artist_id`)))"
-    " group by `ar`.`name`,`a`.`name` order by `ar`.`name`,`a`.`name`")
+    " group by `ar`.`name`,`a`.`name`, `a`.`image` order by `ar`.`name`,`a`.`name`")
 
 VIEWS_DROP = ["albums_info_by_artist_album"] 
 

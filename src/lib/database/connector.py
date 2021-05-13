@@ -2,10 +2,8 @@
 '''
 Database interface
 '''
-import json
 import os
 import mysql.connector
-import base64
 from mysql.connector import errorcode
 from lib.media.song import Song
 from lib.media.definitions import DATABASE
@@ -306,28 +304,25 @@ class Db:
             cursor = self._connection.cursor()
 
             cursor.execute(query)
-            data = [] 
-            for (artist_name, album_name, duration, tracks) in cursor:
+            data = []
+            for (artist_name, album_name, duration, tracks, album_image) in cursor:
                 data_dict = {}
-               # album_data = {"album_name": album_name, "artist_name": artist_name, "duration": {duration}, "tracks": {tracks}}
-                data_dict.update({"album_name": album_name} )
-                data_dict.update({"artist_name": artist_name} )
-                data_dict.update({"duration": duration} )
-                data_dict.update({"tracks": tracks} )
-                
-                data.append(data_dict)
+                data_dict.update({"album_name": album_name})
+                data_dict.update({"artist_name": artist_name})
+                data_dict.update({"duration": duration})
+                data_dict.update({"tracks": tracks})
+                data_dict.update({"album_image_b64": str(album_image)})
 
-           #  {"album_name":{"artist_name":"pepe","duration":135.252,"tracks":25}}
+                data.append(data_dict)
 
             cursor.close()
             self._connection.close()
 
         self._connection.close()
-        dict ={}
+        dict = {}
         dict.update({"albums": data})
-        
-        return dict
 
+        return dict
 
     ############## PRIVATE METHODS ##############
 

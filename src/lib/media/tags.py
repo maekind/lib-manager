@@ -8,12 +8,8 @@ import json
 import base64
 import io
 import requests
-from lib.utils import Utils
-from urllib.parse import quote
-from urllib.request import urlopen, Request
-from os import path
-from pathlib import Path
 from tinytag import TinyTag
+from lib.utils import Utils
 from lib.media.song import Song
 from lib.media.spotify import Spotify
 from lib.database.connector import Db
@@ -30,7 +26,7 @@ class Tags:
     '''
 
     @staticmethod
-    def get_tags_from_file(file):
+    def get_tags_from_file(file, default_image):
         '''
         Function that extract audio file information
         @file: audio file path.
@@ -38,12 +34,13 @@ class Tags:
         '''
         # Fetch file information
         tag = TinyTag.get(file, image=True)
-        
+
         # Initialize db connector
         database = Db()
 
         # Saving information into a Song instance
         song = Song()
+
         song.album = Utils.format_string(tag.album)
         song.album_artist = Utils.format_string(tag.albumartist)
         song.artist = Utils.format_string(tag.artist)
@@ -70,7 +67,7 @@ class Tags:
         if not database.artist_exists(song.artist):
             print("Getting image from TheAudioDB")
             artist_image, artist_image_fanart = Tags.fetch_artist_images(
-                song.artist)
+                song.artist, default_image)
             song.artist_image = artist_image if not None else 0
             song.artist_image_fanart = artist_image_fanart if not None else 0
             print("Got image from TheAudioDB!")
@@ -78,13 +75,14 @@ class Tags:
         # Try to get album image from spotify, if token is provided
         if not database.album_exists(song.album) and song.album != "Unknown":
             print("Getting image from spotify")
-            song.album_image = Spotify.get_album_image(song.album, song.artist)
+            song.album_image = Spotify.get_album_image(
+                song.album, song.artist, default_image)
             print("Got image from spotify!")
-                
+
         return song
 
     @staticmethod
-    def fetch_artist_images(artist):
+    def fetch_artist_images(artist, default_image):
         '''
         Tries to fetch album image from TheAudioDB and
         returns the image in base64 for database storage.
@@ -97,27 +95,23 @@ class Tags:
 
         try:
             # Get artist json data
-            # request = urllib.request.urlopen(url)
-            # data = json.load(request)
-            print("TheAudioDB artist search ...")
+            # print("TheAudioDB artist search ...")
             request = requests.get(url)
             data = json.load(request.content)
-            print("Done!")
+            # print("Done!")
             # Get artist image
             url_artist_image = data["artists"][0]["strArtistThumb"]
 
             if url_artist_image is not None:
                 # Fetch artist image thumbnail
-                # artist_image = urllib.request.urlopen(url_artist_image).read()
-                # artist_image = base64.b64encode(artist_image)
-                print("TheAudioDB getting artist image ...")
+                # print("TheAudioDB getting artist image ...")
                 response = requests.get(url_artist_image)
                 image_bytes = io.BytesIO(response.content)
                 artist_image = base64.b64encode(image_bytes)
-                print("Done!")
+                # print("Done!")
         except Exception:
 
-            artist_image = base64.b64encode(Utils.get_default_image())
+            artist_image = base64.b64encode(default_image)
 
         try:
             # Get artist fan art image
@@ -125,16 +119,13 @@ class Tags:
 
             if url_artist_image_fanart is not None:
                 # Fetch artist image fan art
-                # artist_image_fanart = urllib.request.urlopen(
-                #     url_artist_image_fanart).read()
-                # artist_image_fanart = base64.b64encode(artist_image_fanart)
-                print("TheAudioDB getting artist fanart image ...")
+                # print("TheAudioDB getting artist fanart image ...")
                 response = requests.get(url_artist_image_fanart)
                 image_bytes = io.BytesIO(response.content)
                 artist_image_fanart = base64.b64encode(image_bytes)
-                print("Done!")
+                # print("Done!")
         except Exception:
 
-            artist_image_fanart = base64.b64encode(Utils.get_default_image())
+            artist_image_fanart = base64.b64encode(default_image)
 
         return (artist_image, artist_image_fanart)

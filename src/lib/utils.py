@@ -22,13 +22,16 @@ class Utils:
         '''
         Checks if string is null or empty or only have whitespaces
         '''
-        new_str = ""
-        if re.match('^ +', str):
-            new_str = str.lstrip()
-        elif str is None or str == "":
-            new_str = "Unknown"
+        new_str = "Unknown"
 
-        return new_str
+        # if str is not not we check for leading whitespaces and return srt  
+        if str is not None and str != "":
+            if re.match('^ +', str):
+                str = str.lstrip()
+            
+            return str
+        else:
+            return new_str
 
     @staticmethod
     def replace_special_chars(text):
@@ -40,16 +43,6 @@ class Utils:
                 text = text.replace(ch, "")
 
         return text
-
-    @staticmethod
-    def get_default_image():
-        '''
-        Function to fetch the default image file for unknowms
-        '''
-        with open(Path(".").resolve() / path.join("lib", "media", "res", "unknown.jpeg"), "br") as image_file:
-            image = image_file.read()
-
-        return image
 
     @staticmethod
     def unquote_file(file):

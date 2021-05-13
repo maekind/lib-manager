@@ -6,9 +6,7 @@ import time
 from pathlib import Path
 from os import walk, path
 from lib.media.definitions import FORMAT_TYPES
-from lib.media.song import Song
 from lib.media.tags import Tags
-from lib.media.spotify import Spotify
 from lib.logger import Logger, Level
 
 __author__ = 'Marco Espinosa'
@@ -29,6 +27,8 @@ class Scanner:
         '''
         self._folder = folder
         self._count = 0
+        self._image = self.__get_default_image()
+        
         # TODO: In production configure logger to info.
         self._logger = Logger("scanner", Level.DEBUG)
 
@@ -40,10 +40,6 @@ class Scanner:
         songs = []
         start_time = time.time()
 
-        # TODO: Get tokens from database and pass as parameter
-        # token, expire = Spotify.get_token()
-        # expired_time = start_time
-
         # Iterate each element of the folder
         for root, subdirs, files in walk(self._folder):
             self._logger.debug(f"Checking into {root}")
@@ -53,7 +49,7 @@ class Scanner:
                 if Path(fil).suffix in FORMAT_TYPES:
                     # TODO: Maybe check if file exists in database before launching get_tags!
                     # That would be speedy!
-                    song = Tags.get_tags_from_file(path.join(root, fil))
+                    song = Tags.get_tags_from_file(path.join(root, fil), self._image)
                     self._logger.debug(f"Got: {song.artist} - {song.album} - {song.title}")
                     # Adds song to the list
                     songs.append(song)
@@ -77,3 +73,12 @@ class Scanner:
         id = database.add_song(song)
         total_time = time.time() - start_time
         return (songs, None, total_time)
+
+    def __get_default_image(self):
+        '''
+        Function to fetch the default image file for unknowms
+        '''
+        with open(Path(".").resolve() / path.join("lib", "media", "res", "unknown.jpg"), "br") as image_file:
+            image = image_file.read()
+
+        return image

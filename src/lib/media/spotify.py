@@ -2,17 +2,11 @@
 '''
 Spotify wrapper
 '''
-import requests
 import base64
-import json
 import urllib
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-from os import path
-from pathlib import Path
-from urllib.request import urlopen
 from fuzzywuzzy import process
-from lib.utils import Utils
 
 
 __author__ = 'Marco Espinosa'
@@ -27,9 +21,9 @@ class Spotify:
     '''
 
     RATIO_MIN = 80
-    
+
     @staticmethod
-    def get_album_image(album_name, artist_name, client_id='70a5e19762ea4ae896e96756760d87ff', client_secret='67f055645e314dfb914854f7d7ed92ca'):
+    def get_album_image(album_name, artist_name, default_image, client_id='70a5e19762ea4ae896e96756760d87ff', client_secret='67f055645e314dfb914854f7d7ed92ca'):
         '''
         Function that returns album image
         @album_name: album name to search
@@ -37,60 +31,61 @@ class Spotify:
         @return: base 64 album image or None
         '''
         try:
-            
+
             client_credentials_manager = SpotifyClientCredentials(
                 client_id=client_id, client_secret=client_secret)
 
             # spotify object to access API
             sp = spotipy.Spotify(
                 client_credentials_manager=client_credentials_manager)
-            
+
             # Search artist query
             result = sp.search(artist_name, type='artist')
             # Extract Artist's uri
             artist_uri = result['artists']['items'][0]['uri']
-            
+
             # Store artist's albums' names' and uris in separate lists
             sp_albums = sp.artist_albums(artist_uri, album_type='album')
-            
+
             # Extract album information
             album_names = []
             album_names.extend(sp_albums['items'])
             while sp_albums['next']:
                 sp_albums = sp.next(sp_albums)
                 album_names.extend(sp_albums['items'])
-            
+
             # Sort albums
-            album_names.sort(key=lambda album:album['name'].lower())
+            album_names.sort(key=lambda album: album['name'].lower())
 
             # Create dictionary with results (name: image)
             album_dict = {}
-            
+
             for album in album_names:
                 name = album['name']
                 image = album['images']
-                url_image  = image[0]['url']
-                album_dict.update({ name : url_image })
+                url_image = image[1]['url']  # get size of 300
+                album_dict.update({name: url_image})
 
             #print(json.dumps(album_dict, indent=4, sort_keys=True))
 
-            sp_compilations = sp.artist_albums(artist_uri, album_type='compilation')
-            
+            sp_compilations = sp.artist_albums(
+                artist_uri, album_type='compilation')
+
             # Extract album information
             compilations = []
             compilations.extend(sp_compilations['items'])
             while sp_compilations['next']:
                 sp_compilations = sp.next(sp_compilations)
                 compilations.extend(sp_compilations['items'])
-            
+
             # Sort compilations
-            compilations.sort(key=lambda album:album['name'].lower())
+            compilations.sort(key=lambda album: album['name'].lower())
 
             for compilation in compilations:
                 name = compilation['name']
                 image = compilation['images']
-                url_image  = image[0]['url']
-                album_dict.update({ name : url_image })
+                url_image = image[0]['url']
+                album_dict.update({name: url_image})
 
             #print(json.dumps(album_dict, indent=4, sort_keys=True))
 
@@ -100,10 +95,11 @@ class Spotify:
             for album in album_dict:
                 album_name_list.append(album)
             #print(album_name_list)
-            Ratios = process.extract(album_name, album_name_list, limit=len(album_name_list))
+            Ratios = process.extract(
+                album_name, album_name_list, limit=len(album_name_list))
             #print(Ratios)
             # You can also select the string with the highest matching percentage
-            highest = process.extractOne(album_name,album_name_list)
+            highest = process.extractOne(album_name, album_name_list)
             #print(highest)
 
             if highest[0] is not None:
@@ -120,9 +116,9 @@ class Spotify:
         except Exception as ex:
             print(f"ERROR SPOTIFY: {ex}")
 
-        return base64.b64encode(Utils.get_default_image())
+        return base64.b64encode(default_image)
         # return 0
-            
+
 # if __name__ == "__main__":
 #     artist_name = "Queen"
 #     album_name = "The Platinum Collection (CD 3)"

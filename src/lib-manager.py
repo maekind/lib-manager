@@ -85,7 +85,8 @@ def scan_library():
 
         logger.info(f'Processed files: {count} in {scan_time} seconds')
         return 'ok'
-    except:
+    except Exception as ex:
+        logger.error(f"Exception:{ex}")
         return 'nok'
 
 
