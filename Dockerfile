@@ -1,4 +1,4 @@
-# Event-manager program
+# Library manager program
 FROM python:slim
 LABEL maekind.webplayer.name="lib-manager" \
       maekind.webplayer.maintainer="Marco Espinosa" \
