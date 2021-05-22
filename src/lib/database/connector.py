@@ -31,6 +31,7 @@ class Db:
         self._port = os.environ['DB_PORT']
         self._logger = Logger("database")
         self._database = DATABASE
+        self._connection = None
 
     def __connect(self):
         '''
@@ -64,18 +65,19 @@ class Db:
             cursor = self._connection.cursor()
 
             if freshdb:  # Delete previous structure
-                self._logger.info(f"Initialising a fresh database ...")
+                self._logger.info("Initialising a fresh database ...")
                # Delete views
                 for view_name in VIEWS_DROP:
                     self._logger.info(f"Dropping view {view_name}")
                     drop_query = f"DROP VIEW {view_name}"
                     try:
                         cursor.execute(drop_query)
+
                     except mysql.connector.Error as err:
                         self._logger.error(err.msg)
-                else:
-                    self._logger.info(
-                        f"View {view_name} dropped successfully.")
+                    else:
+                        self._logger.info(
+                            f"View {view_name} dropped successfully.")
 
               # Delete tables
                 for table_name in TABLES_DROP:
@@ -83,13 +85,15 @@ class Db:
                     drop_query = f"DROP TABLE {table_name}"
                     try:
                         cursor.execute(drop_query)
+
                     except mysql.connector.Error as err:
                         self._logger.error(err.msg)
-                else:
-                    self._logger.info(
-                        f"Table {table_name} dropped successfully.")
+                    else:
+                        self._logger.info(
+                            f"Table {table_name} dropped successfully.")
+
             else:
-                self._logger.info(f"Initialising database ...")
+                self._logger.info("Initialising database ...")
 
             # Create tables
             for table_name in TABLES_CREATE:
@@ -163,7 +167,7 @@ class Db:
                 cursor.close()
                 self._connection.close()
 
-            self._logger.info(f"Database initialized successfully.")
+            self._logger.info("Database initialized successfully.")
 
     def add_song(self, song):
         '''
@@ -240,7 +244,7 @@ class Db:
         @album: album name
         @return: bool. wheather the album exist.
         '''
-        id = None
+        result_id = None
         album = album.replace("'", "\\'")
         query = (f"SELECT id FROM album WHERE name = '{album}'")
 
@@ -251,12 +255,12 @@ class Db:
             cursor = self._connection.cursor()
 
             cursor.execute(query)
-            id = cursor.fetchone()
+            result_id = cursor.fetchone()
 
             cursor.close()
             self._connection.close()
 
-            if id is not None:
+            if result_id is not None:
                 res = True
 
         self._connection.close()
@@ -269,7 +273,7 @@ class Db:
         @artist: artist name
         @return: bool. wheather the artist exist.
         '''
-        id = None
+        result_id = None
         artist = artist.replace("'", "\\'")
         query = (f"SELECT id FROM artist WHERE name = '{artist}'")
 
@@ -280,12 +284,12 @@ class Db:
             cursor = self._connection.cursor()
 
             cursor.execute(query)
-            id = cursor.fetchone()
+            result_id = cursor.fetchone()
 
             cursor.close()
             self._connection.close()
 
-            if id is not None:
+            if result_id is not None:
                 res = True
 
         self._connection.close()
@@ -295,9 +299,9 @@ class Db:
     def get_albums_data(self):
         '''
         Function to fetch albums data
-        @return: database result 
+        @return: database result
         '''
-        query = (f"SELECT * FROM albums_info_by_artist_album")
+        query = ("SELECT * FROM albums_info_by_artist_album")
 
         self.__connect()
         if self._connection is not None:
@@ -319,10 +323,10 @@ class Db:
             self._connection.close()
 
         self._connection.close()
-        dict = {}
-        dict.update({"albums": data})
+        album_dict = {}
+        album_dict.update({"albums": data})
 
-        return dict
+        return album_dict
 
     ############## PRIVATE METHODS ##############
 
@@ -366,7 +370,7 @@ class Db:
         '''
         # Select file id from file
         # If it doesn't exist, we added and fetch id.
-        id = None
+        result_id = None
         title = song.title.replace("'", "\\'")
         query = (f"SELECT id FROM songs WHERE title = '{title}'")
 
@@ -375,22 +379,25 @@ class Db:
             cursor = self._connection.cursor()
 
             cursor.execute(query)
-            id = cursor.fetchone()
+            result_id = cursor.fetchone()
 
-            if id is None:
-                query = (
-                    f"INSERT INTO songs (title, duration, track, file_id, album_id, artist_id) VALUES ('{title}', {song.duration}, {song.track}, {file_id}, {album_id}, {artist_id})")
-                cursor.execute(query)
+            if result_id is None:
+                sql_insert_blob_query = """ INSERT INTO songs
+                            (title, duration, track, file_id, album_id, artist_id) 
+                            VALUES (%s,%s,%s,%s,%s,%s)"""
+                insert_blob_tuple = (
+                    title, song.duration, song.track, file_id, album_id, artist_id)
+                cursor.execute(sql_insert_blob_query, insert_blob_tuple)
                 self._connection.commit()
-                id = cursor.lastrowid
+                result_id = cursor.lastrowid
 
             else:
-                id = id[0]
+                result_id = result_id[0]
 
             cursor.close()
             self._connection.close()
 
-        return id
+        return result_id
 
     def __add_file(self, song):
         '''
@@ -400,7 +407,7 @@ class Db:
         '''
         # Select file id from file
         # If it doesn't exist, we added and fetch id.
-        id = None
+        result_id = None
         audio_file = song.audio_file.replace("'", "\\'")
         query = (f"SELECT id FROM files WHERE path = '{audio_file}'")
 
@@ -409,24 +416,24 @@ class Db:
             cursor = self._connection.cursor()
 
             cursor.execute(query)
-            id = cursor.fetchone()
+            result_id = cursor.fetchone()
 
-            if id is None:
+            if result_id is None:
 
                 query = (
                     f"INSERT INTO files (path) VALUES ('{audio_file}')")
 
                 cursor.execute(query)
                 self._connection.commit()
-                id = cursor.lastrowid
+                result_id = cursor.lastrowid
 
             else:
-                id = id[0]
+                result_id = result_id[0]
 
             cursor.close()
             self._connection.close()
 
-        return id
+        return result_id
 
     def __add_artist(self, song):
         '''
@@ -436,7 +443,7 @@ class Db:
         '''
         # Select artist id from artist
         # If it doesn't exist, we added and fetch id.
-        id = None
+        result_id = None
         artist = song.artist.replace("'", "\\'")
         query = (f"SELECT id FROM artist WHERE name = '{artist}'")
 
@@ -445,9 +452,9 @@ class Db:
             cursor = self._connection.cursor()
 
             cursor.execute(query)
-            id = cursor.fetchone()
+            result_id = cursor.fetchone()
 
-            if id is None:
+            if result_id is None:
                 sql_insert_blob_query = """ INSERT INTO artist
                           (name, image, image_fanart) VALUES (%s,%s,%s)"""
                 insert_blob_tuple = (
@@ -456,15 +463,15 @@ class Db:
                 cursor.execute(sql_insert_blob_query, insert_blob_tuple)
 
                 self._connection.commit()
-                id = cursor.lastrowid
+                result_id = cursor.lastrowid
 
             else:
-                id = id[0]
+                result_id = result_id[0]
 
             cursor.close()
             self._connection.close()
 
-        return id
+        return result_id
 
     def __add_album(self, song, artist_id):
         '''
@@ -476,7 +483,7 @@ class Db:
         # Select album id from album
         # If it doesn't exist, we added and fetch id.
 
-        id = None
+        result_id = None
         album = song.album.replace("'", "\\'")
         query = (f"SELECT id FROM album WHERE name = '{album}'")
 
@@ -485,23 +492,24 @@ class Db:
             cursor = self._connection.cursor()
 
             cursor.execute(query)
-            id = cursor.fetchone()
+            result_id = cursor.fetchone()
 
-            if id is None:
+            if result_id is None:
                 sql_insert_blob_query = """ INSERT INTO album
-                          (name, genre, tracks, year, image, artist_id) VALUES (%s,%s,%s,%s,%s,%s)"""
+                          (name, genre, tracks, year, image, artist_id) 
+                          VALUES (%s,%s,%s,%s,%s,%s)"""
                 insert_blob_tuple = (
                     album, song.genre, song.track_total, song.year, song.album_image, artist_id)
 
                 cursor.execute(sql_insert_blob_query, insert_blob_tuple)
 
                 self._connection.commit()
-                id = cursor.lastrowid
+                result_id = cursor.lastrowid
 
             else:
-                id = id[0]
+                result_id = result_id[0]
 
             cursor.close()
             self._connection.close()
 
-        return id
+        return result_id
