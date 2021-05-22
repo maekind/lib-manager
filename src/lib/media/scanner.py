@@ -28,7 +28,7 @@ class Scanner:
         self._folder = folder
         self._count = 0
         self._image = self.__get_default_image()
-        
+
         # TODO: In production configure logger to info.
         self._logger = Logger("scanner", Level.DEBUG)
 
@@ -49,11 +49,13 @@ class Scanner:
                 if Path(fil).suffix in FORMAT_TYPES:
                     # TODO: Maybe check if file exists in database before launching get_tags!
                     # That would be speedy!
-                    song = Tags.get_tags_from_file(path.join(root, fil), self._image)
-                    self._logger.debug(f"Got: {song.artist} - {song.album} - {song.title}")
+                    song = Tags.get_tags_from_file(
+                        path.join(root, fil), self._image)
+                    self._logger.debug(
+                        f"Got: {song.artist} - {song.album} - {song.title}")
                     # Adds song to the list
                     songs.append(song)
-                    id = database.add_song(song)
+                    database.add_song(song)
                     self._count += 1
 
         total_time = time.time() - start_time
@@ -66,11 +68,11 @@ class Scanner:
         '''
         songs = []
         start_time = time.time()
-        song = Tags.get_tags_from_file(file_path)
+        song = Tags.get_tags_from_file(file_path, self.__get_default_image())
         self._logger.debug(f"Got: {song.album} - {song.title}")
 
         songs.append(song)
-        id = database.add_song(song)
+        database.add_song(song)
         total_time = time.time() - start_time
         return (songs, None, total_time)
 
