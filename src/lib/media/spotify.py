@@ -23,35 +23,38 @@ class Spotify:
     RATIO_MIN = 80
 
     @staticmethod
-    def get_album_image(album_name, artist_name, default_image, client_id='70a5e19762ea4ae896e96756760d87ff', client_secret='67f055645e314dfb914854f7d7ed92ca'):
+    def get_album_image(album_name, artist_name, default_image, client_id='', client_secret=''):
         '''
         Function that returns album image
         @album_name: album name to search
         @artist_name: artist name to search
         @return: base 64 album image or None
         '''
+        # TODO: Delete this 2 lines in production! 
+        client_id='70a5e19762ea4ae896e96756760d87ff'
+        client_secret='67f055645e314dfb914854f7d7ed92ca'
         try:
 
             client_credentials_manager = SpotifyClientCredentials(
                 client_id=client_id, client_secret=client_secret)
 
             # spotify object to access API
-            sp = spotipy.Spotify(
+            spotify = spotipy.Spotify(
                 client_credentials_manager=client_credentials_manager)
 
             # Search artist query
-            result = sp.search(artist_name, type='artist')
+            result = spotify.search(artist_name, type='artist')
             # Extract Artist's uri
             artist_uri = result['artists']['items'][0]['uri']
 
             # Store artist's albums' names' and uris in separate lists
-            sp_albums = sp.artist_albums(artist_uri, album_type='album')
+            sp_albums = spotify.artist_albums(artist_uri, album_type='album')
 
             # Extract album information
             album_names = []
             album_names.extend(sp_albums['items'])
             while sp_albums['next']:
-                sp_albums = sp.next(sp_albums)
+                sp_albums = spotify.next(sp_albums)
                 album_names.extend(sp_albums['items'])
 
             # Sort albums
@@ -68,14 +71,14 @@ class Spotify:
 
             #print(json.dumps(album_dict, indent=4, sort_keys=True))
 
-            sp_compilations = sp.artist_albums(
+            sp_compilations = spotify.artist_albums(
                 artist_uri, album_type='compilation')
 
             # Extract album information
             compilations = []
             compilations.extend(sp_compilations['items'])
             while sp_compilations['next']:
-                sp_compilations = sp.next(sp_compilations)
+                sp_compilations = spotify.next(sp_compilations)
                 compilations.extend(sp_compilations['items'])
 
             # Sort compilations
@@ -95,8 +98,8 @@ class Spotify:
             for album in album_dict:
                 album_name_list.append(album)
             #print(album_name_list)
-            Ratios = process.extract(
-                album_name, album_name_list, limit=len(album_name_list))
+            # ratios = process.extract(
+            #     album_name, album_name_list, limit=len(album_name_list))
             #print(Ratios)
             # You can also select the string with the highest matching percentage
             highest = process.extractOne(album_name, album_name_list)

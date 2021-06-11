@@ -2,11 +2,10 @@
 '''
 Utils functions
 '''
-import bcrypt
 import re
-from os import path
-from pathlib import Path
 from urllib.parse import unquote
+import bcrypt
+
 
 __author__ = 'Marco Espinosa'
 __version__ = '1.0'
@@ -18,29 +17,28 @@ class Utils:
     Class to handle util functions
     '''
     @staticmethod
-    def format_string(str):
+    def format_string(str_param):
         '''
         Checks if string is null or empty or only have whitespaces
         '''
         new_str = "Unknown"
 
-        # if str is not not we check for leading whitespaces and return srt  
-        if str is not None and str != "":
-            if re.match('^ +', str):
-                str = str.lstrip()
-            
-            return str
-        else:
-            return new_str
+        # if str is not not we check for leading whitespaces and return string
+        if str_param is not None and str_param != "":
+            if re.match('^ +', str_param):
+                str_param = str_param.lstrip()
+            return str_param
+
+        return new_str
 
     @staticmethod
     def replace_special_chars(text):
         '''
         Replace special chars
         '''
-        for ch in ['\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '>', '#', '+', '-', '.', '!', '$', '\'', ':', '(', ')', '/']:
-            if ch in text:
-                text = text.replace(ch, "")
+        for character in ['\\', '`', '*', '_', '{', '}', '[', ']', '(', ')', '>', '#', '+', '-', '.', '!', '$', '\'', ':', '(', ')', '/']:
+            if character in text:
+                text = text.replace(character, "")
 
         return text
 

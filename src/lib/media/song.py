@@ -17,6 +17,19 @@ class Song:
         '''
         Default constructor
         '''
+        self._album = ""
+        self._album_artist = ""
+        self._album_image = 0
+        self._artist = ""
+        self._artist_image = 0
+        self._artist_image_fanart = 0
+        self._audio_file = ""
+        self._duration = 0
+        self._genre = ""
+        self._title = ""
+        self._track = 0
+        self._track_total = 0
+        self._year = 0
 
     @property
     def album(self):
