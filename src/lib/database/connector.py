@@ -258,8 +258,7 @@ class Db:
             result_id = cursor.fetchone()
 
             cursor.close()
-            self._connection.close()
-
+            
             if result_id is not None:
                 res = True
 
@@ -287,8 +286,7 @@ class Db:
             result_id = cursor.fetchone()
 
             cursor.close()
-            self._connection.close()
-
+            
             if result_id is not None:
                 res = True
 
@@ -320,13 +318,65 @@ class Db:
                 data.append(data_dict)
 
             cursor.close()
-            self._connection.close()
+            
 
         self._connection.close()
         album_dict = {}
         album_dict.update({"albums": data})
 
         return album_dict
+
+    def get_library_status(self):
+        '''
+        Function to get library status
+        @return: database result
+        '''
+        query = ("SELECT lib_manager FROM status")
+
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+
+            cursor.execute(query)
+            result = cursor.fetchone()
+
+            cursor.close()
+
+        self._connection.close()
+
+        return result[0]
+
+    def set_library_status(self, status):
+        '''
+        Function to set library status
+        @return: database result
+        '''
+        query = f"UPDATE status set lib_manager='{status}'"
+        result = 0
+        self.__connect()
+        if self._connection is not None:
+            cursor = self._connection.cursor()
+            try:
+                cursor.execute(query)
+                self._connection.commit()
+
+                cursor.close()
+
+                # Check for update 
+                query = f"SELECT lib_manager FROM status where lib_manager='{status}'"
+                cursor = self._connection.cursor()
+                cursor.execute(query)
+                result = cursor.fetchone()
+
+                result = len(result)
+
+            except mysql.connector.errors.IntegrityError:
+                self._logger.error(f"Integrity error: status type {status} does not exist!")
+                result = -1
+
+            self._connection.close()
+
+        return result
 
     ############## PRIVATE METHODS ##############
 

@@ -176,7 +176,7 @@ QUERIES["status_types"] = """ INSERT INTO status_types
                           ('ERROR'),
                           ('PENDING'),
                           ('OK'),
-                          ('NOT INIT'),
+                          ('NOT_INIT'),
                           ('INIT') """
 
 VIEWS_CREATE["albums_info_by_artist_album"] = (

@@ -8,8 +8,8 @@ import sys
 import os
 import time
 import json
-from flask import Flask
-from flask import request
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 from lib.database.connector import Db
 from lib.media.scanner import Scanner
 from lib.utils import Utils
@@ -22,6 +22,7 @@ __email__ = 'hi@marcoespinosa.com'
 
 SCANNER = Scanner(os.environ['LIB_FOLDER'])
 APP = Flask(__name__)
+cors = CORS(APP, resources={r"/api/*": {"origins": "*"}}) # Only for public services 
 
 # Configure logger
 LOGGER = Logger("lib-manager")
@@ -35,7 +36,9 @@ def hello_message():
     return 'Lib-manager for handling system file changes'
 
 
-@APP.route('/get_albums')
+### PUBLIC API services
+
+@APP.route('/api/get_albums')
 def get_albums():
     '''
     Function to fetch albums info to database.
@@ -56,7 +59,7 @@ def get_albums():
         return ''
 
 
-@APP.route('/login', methods=['POST', 'GET'])
+@APP.route('/api/login', methods=['POST', 'GET'])
 def login():
     '''
     Function to perform a login into the application
@@ -72,7 +75,7 @@ def login():
     return 'nok'
 
 
-@APP.route('/scan')
+@APP.route('/api/scan')
 def scan_library():
     '''
     Function to handle scan library event
@@ -92,6 +95,47 @@ def scan_library():
         return 'nok'
 
 
+@APP.route('/api/getstatus', methods=["GET"])
+def get_status():
+    '''
+    Function to handle get status event
+    '''
+    database = Db()
+    res = database.get_library_status()
+
+    if res is not None:
+        LOGGER.info(f"Library status fetched ({res})")
+    else:
+        LOGGER.error("Library status not set!")
+    
+    response = jsonify(message=res)
+
+    # Enable Access-Control-Allow-Origin
+    response.headers.add("Access-Control-Allow-Origin", "*")
+
+    return response
+
+@APP.route('/api/setstatus/<status>')
+def set_status(status):
+    '''
+    Function to handle set status event
+    '''
+    database = Db()
+    res = database.set_library_status(status)
+
+    message = ""
+    if res > 0:
+        LOGGER.info(f"Library status set to {status} successfully.")
+        message = "OK"
+    else:
+        LOGGER.error("Library status not set!")
+        message = "NOK"
+
+    return message
+
+### END PUBLIC API services
+
+### PRIVATE services
 @APP.route('/created/<path:file>')
 def create_file(file):
     '''
@@ -116,7 +160,6 @@ def create_file(file):
 
     return message
 
-
 @APP.route('/deleted/<path:file>')
 def delete_file(file):
     '''
@@ -137,11 +180,14 @@ def delete_file(file):
 
     return message
 
+### END PRIVATE SERVICES
+
 
 def init_db(freshdb):
     '''
     Function to initialize database at first time
     '''
+
     # Initialize database
     database = Db()
     try:

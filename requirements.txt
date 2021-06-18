@@ -1,5 +1,6 @@
 bcrypt
 Flask
+Flask-cors
 tinytag
 mysql-connector-python
 requests
