@@ -22,7 +22,8 @@ __email__ = 'hi@marcoespinosa.com'
 
 SCANNER = Scanner(os.environ['LIB_FOLDER'])
 APP = Flask(__name__)
-cors = CORS(APP, resources={r"/api/*": {"origins": "*"}}) # Only for public services 
+# Only for public services
+cors = CORS(APP, resources={r"/api/*": {"origins": "*"}})
 
 # Configure logger
 LOGGER = Logger("lib-manager")
@@ -64,15 +65,27 @@ def login():
     '''
     Function to perform a login into the application
     '''
+    response = jsonify(message='NOK')
+
     if request.method == 'POST':
         database = Db()
-        if database.valid_login(request.form['username'],
-                                request.form['password']):
-            return 'ok'
 
-        LOGGER.error('Invalid username/password')
+    if request.method == 'POST':
+        database = Db()
+        # Get login data
+        request_data = request.get_json()
+        username = request_data['username']
+        password = request_data['password']
 
-    return 'nok'
+        if database.valid_login(username, password):
+            response = jsonify(message='OK')
+        else:
+            LOGGER.error('Invalid username/password')
+
+    # Enable Access-Control-Allow-Origin
+    response.headers.add("Access-Control-Allow-Origin", "*")
+
+    return response
 
 
 @APP.route('/api/scan')
@@ -107,7 +120,7 @@ def get_status():
         LOGGER.info(f"Library status fetched ({res})")
     else:
         LOGGER.error("Library status not set!")
-    
+
     response = jsonify(message=res)
 
     # Enable Access-Control-Allow-Origin
@@ -115,27 +128,35 @@ def get_status():
 
     return response
 
-@APP.route('/api/setstatus/<status>')
-def set_status(status):
+
+@APP.route('/api/setstatus', methods=['POST', 'GET'])
+def set_status():
     '''
     Function to handle set status event
     '''
-    database = Db()
-    res = database.set_library_status(status)
+    response = jsonify(message='NOK')
 
-    message = ""
-    if res > 0:
-        LOGGER.info(f"Library status set to {status} successfully.")
-        message = "OK"
-    else:
-        LOGGER.error("Library status not set!")
-        message = "NOK"
+    if request.method == 'POST':
+        database = Db()
+        request_data = request.get_json()
+        status = request_data['status']
 
-    return message
+        if database.set_library_status(status) > 0:
+            LOGGER.info(f"Library status set to {status} successfully.")
+            response = jsonify(message='OK')
+        else:
+            LOGGER.error("Library status not set!")
+
+    # Enable Access-Control-Allow-Origin
+    response.headers.add("Access-Control-Allow-Origin", "*")
+
+    return response
 
 ### END PUBLIC API services
 
 ### PRIVATE services
+
+
 @APP.route('/created/<path:file>')
 def create_file(file):
     '''
@@ -159,6 +180,7 @@ def create_file(file):
         LOGGER.error(f'File {file_unquote} not found!')
 
     return message
+
 
 @APP.route('/deleted/<path:file>')
 def delete_file(file):
