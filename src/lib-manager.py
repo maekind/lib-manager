@@ -14,6 +14,7 @@ from lib.database.connector import Db
 from lib.media.scanner import Scanner
 from lib.utils import Utils
 from lib.logger import Logger
+from lib.exceptions import UserExists, UpdateLibManagerStatusError
 
 
 __author__ = 'Marco Espinosa'
@@ -81,6 +82,39 @@ def login():
             response = jsonify(message='OK')
         else:
             LOGGER.error('Invalid username/password')
+
+    # Enable Access-Control-Allow-Origin
+    response.headers.add("Access-Control-Allow-Origin", "*")
+
+    return response
+
+
+@APP.route('/api/setup', methods=['POST', 'GET'])
+def setup():
+    '''
+    Function to perform initial setup
+    '''
+    response = jsonify(message='NOK')
+
+    if request.method == 'POST':
+        database = Db()
+
+    if request.method == 'POST':
+        database = Db()
+        # Get setup data
+        request_data = request.get_json()
+
+        try:
+            if database.setup(request_data) > 0:
+                response = jsonify(message='OK')
+            else:
+                LOGGER.error('Initial setup could not be commited!')
+        except UserExists as ex:
+            response = jsonify(message=ex)
+        except UpdateLibManagerStatusError as ex:
+            response = jsonify(message=ex)
+
+            
 
     # Enable Access-Control-Allow-Origin
     response.headers.add("Access-Control-Allow-Origin", "*")

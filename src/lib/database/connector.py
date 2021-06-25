@@ -10,6 +10,7 @@ from lib.media.definitions import DATABASE
 from lib.database.tables import TABLES_CREATE, TABLES_DROP, QUERIES, VIEWS_DROP, VIEWS_CREATE
 from lib.logger import Logger
 from lib.utils import Utils
+from lib.exceptions import UserExists, UpdateLibManagerStatusError
 
 __author__ = 'Marco Espinosa'
 __version__ = '1.0'
@@ -258,7 +259,7 @@ class Db:
             result_id = cursor.fetchone()
 
             cursor.close()
-            
+
             if result_id is not None:
                 res = True
 
@@ -286,7 +287,7 @@ class Db:
             result_id = cursor.fetchone()
 
             cursor.close()
-            
+
             if result_id is not None:
                 res = True
 
@@ -318,7 +319,6 @@ class Db:
                 data.append(data_dict)
 
             cursor.close()
-            
 
         self._connection.close()
         album_dict = {}
@@ -362,7 +362,7 @@ class Db:
 
                 cursor.close()
 
-                # Check for update 
+                # Check for update
                 query = f"SELECT lib_manager FROM status where lib_manager='{status}'"
                 cursor = self._connection.cursor()
                 cursor.execute(query)
@@ -371,12 +371,71 @@ class Db:
                 result = len(result)
 
             except mysql.connector.errors.IntegrityError:
-                self._logger.error(f"Integrity error: status type {status} does not exist!")
+                self._logger.error(
+                    f"Integrity error: status type {status} does not exist!")
                 result = -1
 
             self._connection.close()
 
         return result
+
+    def setup(self, json_object):
+        '''
+        Method to save initial configuration into the database
+        '''
+        language = json_object['language']
+        email = json_object['email']
+        password = json_object['password']
+        avatar = json_object['avatar']
+        username = json_object['username']
+        spotify_client_id = json_object['spotify_client_id']
+        spotify_client_secret = json_object['spotify_client_secret']
+        music_folder = json_object['music_folder']
+
+        # If user exists raise exception!
+        if self.__user_exists(email):
+            raise UserExists(email)
+
+        # Insert login information
+        self.__connect()
+
+        cursor = self._connection.cursor()
+
+        sql_insert_login_query = """ INSERT INTO login
+                    (name, avatar, email, password) VALUES (%s,%s,%s, %s)"""
+
+        sql_insert_login_tuple = (
+            username, avatar, email, Utils.hash_password(password.encode('utf-8')))
+
+        cursor.execute(sql_insert_login_query, sql_insert_login_tuple)
+        self._connection.commit()
+        result_id = cursor.lastrowid
+
+        cursor.close()
+        #  Insert configuration information
+        cursor = self._connection.cursor()
+
+        self._logger.info(f"Language:{language}")
+        
+        sql_insert_login_query = """ INSERT INTO configuration
+                    (user_id, lib_path, language, spotify_client_id, spotify_client_secret) VALUES (%s,%s,%s,%s,%s)"""
+
+        sql_insert_login_tuple = (
+            result_id, music_folder, language, spotify_client_id, spotify_client_secret)
+
+        cursor.execute(sql_insert_login_query, sql_insert_login_tuple)
+        self._connection.commit()
+        result_id = cursor.lastrowid
+        self._connection.close()
+
+        # Update library amnager status
+        if self.set_library_status('OK') > 0:
+            self._logger.info("Library status set to OK successfully.")
+        else:
+            self._logger.error("Library status not set!")
+            raise UpdateLibManagerStatusError("Library status not set!")
+        
+        return result_id
 
     ############## PRIVATE METHODS ##############
 
