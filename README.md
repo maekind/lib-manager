@@ -1,7 +1,16 @@
 # Lib-manager Docker image
 
-This is a private image tended to be use as an interface to database docker image.
+This is a private docker image tended to be use as an interface to database docker image.
 It is used with maekind/file-observer and webserver docker images.
+
+This is part of a personal develop for a media server.
+The lib-manager is the backend ot interface the frontend application with the database.
+
+## Initial setup
+
+The first time the user enters in to the application the initial setup process is launched.
+When initial setup is completed, the lib-manager launches a file scanning in to the configured folder, retrives information for each music file from The audio DB (or Spotify if the user credentials have been configured) and saves it in to the database.
+
 
 ## Download
 
