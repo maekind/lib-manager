@@ -30,9 +30,7 @@ class Spotify:
         @artist_name: artist name to search
         @return: base 64 album image or None
         '''
-        # TODO: Delete this 2 lines in production! 
-        client_id='70a5e19762ea4ae896e96756760d87ff'
-        client_secret='67f055645e314dfb914854f7d7ed92ca'
+       
         try:
 
             client_credentials_manager = SpotifyClientCredentials(
